@@ -167,8 +167,6 @@ export function RedoubtScene({ type, section, mousePosition, isGPRActive }: Redo
             anchorY="middle"
             outlineWidth={0.02}
             outlineColor="#000000"
-            toneMapped={false}
-            depthTest={false}
             renderOrder={10}
           >
             {`Pos ${index + 1}`}
