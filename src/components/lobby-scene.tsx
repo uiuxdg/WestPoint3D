@@ -22,6 +22,19 @@ const CAMERA_POSITIONS = [
   { position: { x: 42, y: 2, z: 5 }, lookAt: { x: 42, y: 2, z: -100 } }, // Section 5: Coming Soon (right)
 ]
 
+function getAdjustedPosition(
+  position: { x: number; y: number; z: number },
+  lookAt: { x: number; y: number; z: number },
+  distanceOffset: number,
+) {
+  if (distanceOffset === 0) return position
+  const dir = new THREE.Vector3(position.x - lookAt.x, position.y - lookAt.y, position.z - lookAt.z)
+  const len = dir.length()
+  if (len === 0) return position
+  dir.normalize().multiplyScalar(distanceOffset)
+  return { x: position.x + dir.x, y: position.y + dir.y, z: position.z + dir.z }
+}
+
 function LobbyModel() {
   // Load lobby model from public/models/lobby.glb
   const { scene } = useGLTF("/models/lobby.glb")
@@ -71,8 +84,31 @@ export function LobbyScene({ section, mousePosition }: LobbySceneProps) {
 
   useEffect(() => {
     const cameraSetting = CAMERA_POSITIONS[section] || CAMERA_POSITIONS[0]
-    const newPosition = cameraSetting.position
-    const newLookAt = cameraSetting.lookAt
+    const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false
+    const newPosition = isMobile
+      ? getAdjustedPosition(cameraSetting.position, cameraSetting.lookAt, 2)
+      : cameraSetting.position
+    let newLookAt = cameraSetting.lookAt
+    if (isMobile) {
+      const forward = new THREE.Vector3(
+        newLookAt.x - newPosition.x,
+        newLookAt.y - newPosition.y,
+        newLookAt.z - newPosition.z,
+      )
+      let right = new THREE.Vector3().copy(forward).cross(new THREE.Vector3(0, 1, 0))
+      if (right.lengthSq() < 1e-6) {
+        right.set(1, 0, 0)
+      }
+      right.normalize().multiplyScalar(1)
+      newPosition.x += right.x
+      newPosition.y += right.y
+      newPosition.z += right.z
+      newLookAt = {
+        x: newLookAt.x + right.x,
+        y: newLookAt.y + right.y,
+        z: newLookAt.z + right.z,
+      }
+    }
     // Capture stable start and end states for the transition
     prevLookAtRef.current.copy(cameraTargetRef.current)
     endLookAtRef.current.set(newLookAt.x, newLookAt.y, newLookAt.z)

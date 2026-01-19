@@ -88,7 +88,7 @@ export function DrawerPanel({ variant }: { variant?: "site1" | "site2" | "site3"
       <Dialog.Root open={openKind !== null} onOpenChange={(o) => (!o ? close() : null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-[70] w-[90vw] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-xl border border-white/10 bg-zinc-900/90 p-6 text-white shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-md data-[state=open]:animate-in data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:zoom-out-95">
+          <Dialog.Content className="fixed bottom-0 left-1/2 top-auto z-[70] w-[90vw] max-w-md -translate-x-1/2 md:left-1/2 md:top-1/2 md:bottom-auto md:inset-x-auto md:w-[90vw] md:max-w-2xl md:h-auto md:-translate-x-1/2 md:-translate-y-1/2 h-[28vh] overflow-auto rounded-t-xl rounded-b-none md:rounded-xl border border-white/10 bg-zinc-900/90 p-3 md:p-6 text-white shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-md data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-10 md:data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom-10 md:data-[state=closed]:zoom-out-95">
             <div className="mb-4 flex items-center justify-between">
               <Dialog.Title className="text-2xl font-bold uppercase tracking-wide">
                 {openKind === "images" && "Images"}

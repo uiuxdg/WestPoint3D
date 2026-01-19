@@ -36,6 +36,19 @@ const CAMERA_POSITIONS: Record<ViewMode, Array<{ position: { x: number; y: numbe
   ],
 }
 
+function getAdjustedPosition(
+  position: { x: number; y: number; z: number },
+  lookAt: { x: number; y: number; z: number },
+  distanceOffset: number,
+) {
+  if (distanceOffset === 0) return position
+  const dir = new THREE.Vector3(position.x - lookAt.x, position.y - lookAt.y, position.z - lookAt.z)
+  const len = dir.length()
+  if (len === 0) return position
+  dir.normalize().multiplyScalar(distanceOffset)
+  return { x: position.x + dir.x, y: position.y + dir.y, z: position.z + dir.z }
+}
+
 export function RedoubtScene({ type, section, mousePosition, isGPRActive }: RedoubtSceneProps) {
   const { camera, gl } = useThree()
   const fortRef = useRef<THREE.Group>(null)
@@ -56,8 +69,31 @@ export function RedoubtScene({ type, section, mousePosition, isGPRActive }: Redo
 
     const positions = CAMERA_POSITIONS[type] || CAMERA_POSITIONS["redoubt-4"]
     const cameraSetting = positions[section] || positions[0]
-    const newPosition = cameraSetting.position
-    const newLookAt = cameraSetting.lookAt
+    const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false
+    const newPosition = isMobile
+      ? getAdjustedPosition(cameraSetting.position, cameraSetting.lookAt, 2)
+      : cameraSetting.position
+    let newLookAt = cameraSetting.lookAt
+    if (isMobile) {
+      const forward = new THREE.Vector3(
+        newLookAt.x - newPosition.x,
+        newLookAt.y - newPosition.y,
+        newLookAt.z - newPosition.z,
+      )
+      let right = new THREE.Vector3().copy(forward).cross(new THREE.Vector3(0, 1, 0))
+      if (right.lengthSq() < 1e-6) {
+        right.set(1, 0, 0)
+      }
+      right.normalize().multiplyScalar(1)
+      newPosition.x += right.x
+      newPosition.y += right.y
+      newPosition.z += right.z
+      newLookAt = {
+        x: newLookAt.x + right.x,
+        y: newLookAt.y + right.y,
+        z: newLookAt.z + right.z,
+      }
+    }
 
     originalCameraPositionRef.current.set(newPosition.x, newPosition.y, newPosition.z)
 
