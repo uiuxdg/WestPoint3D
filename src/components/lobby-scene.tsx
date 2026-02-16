@@ -19,7 +19,8 @@ const CAMERA_POSITIONS = [
   { position: { x: -3, y: 5, z: 20 }, lookAt: { x: -112, y: 12, z: 20 } },
   { position: { x: -8, y: 2, z: 5 }, lookAt: { x: -8, y: 2, z: -100 } }, // Section 3: Redoubt 4 (left)
   { position: { x: 17, y: 2, z: 5 }, lookAt: { x: 17, y: 2, z: -100 } }, // Section 4: Redoubt 5 (center)
-  { position: { x: 42, y: 2, z: 5 }, lookAt: { x: 42, y: 2, z: -100 } }, // Section 5: Coming Soon (right)
+  { position: { x: 42, y: 2, z: 5 }, lookAt: { x: 42, y: 2, z: -100 } }, // Section 5: Fort Clinton (right)
+  { position: { x: 60.75, y: 2, z: 5 }, lookAt: { x: 60.75, y: 2, z: -100 } }, // Section 6: Additional Sites (25% closer, shifted left)
 ]
 
 function getAdjustedPosition(
@@ -210,8 +211,11 @@ export function LobbyScene({ section, mousePosition }: LobbySceneProps) {
         {/* Picture frame for Redoubt 5 - Section 2: lookAt (17, 2, -100) + 0.9 * (camera (17, 2, 5) - lookAt) */}
         <PictureFrame position={[18.5, 3.2, -5.5]} imageUrl="/images/ccaa-logo-square.jpg" />
 
-        {/* Picture frame for Coming Soon - Section 3: lookAt (42, 2, -100) + 0.9 * (camera (42, 2, 5) - lookAt) */}
+        {/* Picture frame for Fort Clinton - Section 3: lookAt (42, 2, -100) + 0.9 * (camera (42, 2, 5) - lookAt) */}
         <PictureFrame position={[43.5, 3.2, -5.5]} imageUrl="/images/ccaa-logo-square.jpg" />
+
+        {/* Picture frame for Additional Sites - Section 4: lookAt (60.75, 2, -100) + 0.9 * (camera (60.75, 2, 5) - lookAt) */}
+        <PictureFrame position={[62.25, 3.2, -5.5]} imageUrl="/images/ccaa-logo-square.jpg" />
 
         {/* Maps of West Point framed image at absolute position, facing -X */}
         <PictureFrame

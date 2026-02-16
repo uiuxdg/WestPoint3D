@@ -69,7 +69,7 @@ export default function Page() {
     setIsGPRActive((prev) => !prev)
   }
 
-  const maxSections = viewMode === "lobby" ? 7 : 4
+  const maxSections = viewMode === "lobby" ? 8 : 4
   const isLastSection = currentSection >= maxSections - 1
   const goToNextSection = () => {
     setCurrentSection((prev) => (prev < maxSections - 1 ? prev + 1 : prev))
@@ -181,14 +181,14 @@ export default function Page() {
             <section className="relative flex h-screen items-end md:items-center justify-center text-center px-4 md:px-8 pb-6 md:pb-0">
               <div className="fade-in-up max-w-6xl">
                 <h1 className="mb-6 md:mb-12 text-4xl md:text-8xl font-bold uppercase text-white">
-                  West Point <span className="text-[#8B4513]">Redoubts</span>
+                  West Point <span className="text-[#9e7252]">Virtual Archive</span>
                 </h1>
                 <p className="mb-8 md:mb-16 text-lg md:text-3xl font-medium text-white/70">
                   Step into history. Explore Revolutionary War fortifications.
                 </p>
                 <button
                   onClick={() => setCurrentSection(1)}
-                  className="w-full md:w-auto rounded-3xl border-2 border-white bg-white/10 px-6 md:px-8 py-3 md:py-4 text-base md:text-xl font-bold text-[#8B4513] shadow-[10px_10px_100px_0px_rgba(219,219,219,0.44)] backdrop-blur-md transition-transform duration-300 hover:scale-105 hover:text-white"
+                  className="w-full md:w-auto rounded-3xl border-2 border-white bg-white/10 px-6 md:px-8 py-3 md:py-4 text-base md:text-xl font-bold text-[#9e7252] shadow-[10px_10px_100px_0px_rgba(219,219,219,0.44)] backdrop-blur-md transition-transform duration-300 hover:scale-105 hover:text-white"
                 >
                   Begin Journey
                 </button>
@@ -320,7 +320,46 @@ export default function Page() {
               </div>
             </section>
 
-            {/* Section 5: Coming Soon */}
+            {/* Section 5: Fort Clinton */}
+            <section className="relative flex h-screen flex-col justify-between md:justify-center items-center md:items-start px-4 md:px-16 py-4 md:py-0">
+              <Card className="order-2 md:order-1 w-full max-w-md md:w-96 mt-0 md:mt-10 rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="p-2 md:p-6">
+                  <CardTitle className="mb-0 md:mb-2 text-xl md:text-5xl font-bold uppercase text-white/70">Fort Clinton</CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+                  <div className="mb-3 md:mb-6 inline-block rounded-lg bg-yellow-500/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-yellow-300">
+                    Under Construction
+                  </div>
+                  <p className="mb-4 md:mb-6 text-white text-sm md:text-base">
+                    A key Hudson River fortification historically paired with Fort Putnam and integral to West Point’s defenses.
+                    This section will include images, files, and research materials specific to Fort Clinton.
+                  </p>
+                  <div className="flex flex-row flex-wrap gap-3">
+                    <button
+                      disabled
+                      className="w-auto cursor-not-allowed rounded-2xl border-2 border-white/30 bg-white/5 px-6 md:px-8 py-3 md:py-4 font-bold text-white/30 opacity-50"
+                    >
+                      Coming Soon
+                    </button>
+                    {!isLastSection && (
+                      <button
+                        onClick={goToNextSection}
+                        className="w-auto rounded-2xl border-2 border-white bg-white/10 px-6 md:px-8 py-3 md:py-4 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
+                      >
+                        Next →
+                      </button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="order-1 md:order-2 -mt-3 md:mt-3 h-[28vh] md:h-auto flex items-start justify-center md:flex md:justify-center">
+                <div className="w-full max-w-md md:w-96 mx-auto origin-top scale-50 md:scale-75">
+                  <DrawerPanel variant="site2" />
+                </div>
+              </div>
+            </section>
+
+            {/* Section 6: Additional Sites */}
             <section className="relative flex h-screen flex-col justify-between md:justify-center items-center md:items-start px-4 md:px-16 py-4 md:py-0">
               <Card className="order-2 md:order-1 w-full max-w-md md:w-96 mt-0 md:mt-10 rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
                 <CardHeader className="p-2 md:p-6">
@@ -360,7 +399,7 @@ export default function Page() {
               </div>
             </section>
 
-            {/* Section 6: About */}
+            {/* Section 7: About */}
             <section className="relative flex h-screen items-end md:items-center justify-center md:justify-start px-4 md:px-16 pb-4 md:pb-0">
               <Card className="w-full max-w-md md:w-96 min-h-[32vh] md:min-h-[70vh] rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
                 <CardHeader>
@@ -539,7 +578,7 @@ export default function Page() {
         )}
       </div>
 
-      <NavigationDots total={viewMode === "lobby" ? 7 : 4} active={currentSection} onChange={setCurrentSection} />
+      <NavigationDots total={viewMode === "lobby" ? 8 : 4} active={currentSection} onChange={setCurrentSection} />
       <LoadingScreen isVisible={isLoading} />
     </div>
   )
