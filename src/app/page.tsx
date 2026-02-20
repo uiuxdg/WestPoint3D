@@ -8,6 +8,8 @@ import { LoadingScreen } from "@/components/loading-screen"
 import { NavigationDots } from "@/components/navigation-dots"
 import type { ViewMode } from "@/types/view-mode"
 import { DrawerPanel } from "@/components/drawer-panel"
+import { ImageViewerModal } from "@/components/image-viewer-modal"
+import type { ImageViewerImage } from "@/components/image-viewer-modal"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
@@ -18,6 +20,7 @@ export default function Page() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isGPRActive, setIsGPRActive] = useState(false)
+  const [viewerImage, setViewerImage] = useState<ImageViewerImage | null>(null)
   const isScrollingRef = useRef(false)
   const viewModeRef = useRef<ViewMode>("lobby")
   const isLoadingRef = useRef(true)
@@ -69,11 +72,36 @@ export default function Page() {
     setIsGPRActive((prev) => !prev)
   }
 
-  const maxSections = viewMode === "lobby" ? 8 : 4
+  const maxSections = viewMode === "lobby" ? 11 : 4
   const isLastSection = currentSection >= maxSections - 1
+  const isFirstSection = currentSection === 0
   const goToNextSection = () => {
     setCurrentSection((prev) => (prev < maxSections - 1 ? prev + 1 : prev))
   }
+  const goToPreviousSection = () => {
+    setCurrentSection((prev) => (prev > 0 ? prev - 1 : prev))
+  }
+
+  const lobbySectionLabels = [
+    "Home",
+    "Aerial Map of West Point",
+    "Captain Greenleaf's Plan",
+    "Redoubt 4",
+    "Fort Clinton",
+    "Fort Putnam",
+    "Redoubt 2",
+    "Batteries",
+    "Fort Webb",
+    "Additional Sites",
+    "Cultural Heritage",
+  ]
+  const redoubtSectionLabels = [
+    viewMode === "redoubt-5" ? "Front Glacis" : "Main Earthwork Rampart",
+    viewMode === "redoubt-5" ? "Breach Point" : "Western Bastion",
+    viewMode === "redoubt-5" ? "Inner Parade Ground" : "Artillery Positions",
+    viewMode === "redoubt-5" ? "Complete Fortification" : "Strategic Overview",
+  ]
+  const navigationLabels = viewMode === "lobby" ? lobbySectionLabels : redoubtSectionLabels
 
   return (
     <div
@@ -86,7 +114,11 @@ export default function Page() {
       <div className="fixed inset-0 z-0">
         <Canvas camera={{ position: [0, 2, 8], fov: 75 }} gl={{ alpha: true, antialias: true }}>
           {viewMode === "lobby" ? (
-            <LobbyScene section={currentSection} mousePosition={mousePosition} />
+            <LobbyScene
+              section={currentSection}
+              mousePosition={mousePosition}
+              onFrameClick={(url) => setViewerImage({ src: url, alt: "Frame image" })}
+            />
           ) : (
             <RedoubtScene
               type={viewMode}
@@ -100,6 +132,13 @@ export default function Page() {
 
       {/* Vignette overlay */}
       <div className="pointer-events-none fixed inset-0 z-10 opacity-50 bg-[radial-gradient(ellipse_at_center,transparent_50%,black_100%)]" />
+
+      {/* Shared image viewer (drawer + picture frame clicks) */}
+      <ImageViewerModal
+        open={viewerImage !== null}
+        image={viewerImage}
+        onClose={() => setViewerImage(null)}
+      />
 
       {/* Hamburger menu + shadcn Sheet */}
       <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
@@ -161,7 +200,7 @@ export default function Page() {
               <p className="px-6 py-2 text-sm font-bold uppercase text-zinc-600">Current Site</p>
               <p className="px-6 py-2 text-xl text-black">
                 {viewMode === "redoubt-4" && "Redoubt 4"}
-                {viewMode === "redoubt-5" && "Redoubt 5"}
+                {viewMode === "redoubt-5" && "Redoubt 2"}
                 {viewMode === "coming-soon" && "Coming Soon"}
               </p>
             </div>
@@ -170,7 +209,7 @@ export default function Page() {
       </Sheet>
 
       <div
-        className="relative z-20 transition-transform duration-1000 ease-in-out"
+        className="relative z-20 pointer-events-none transition-transform duration-1000 ease-in-out"
         style={{
           transform: `translateY(-${currentSection * 100}vh)`,
         }}
@@ -178,8 +217,8 @@ export default function Page() {
         {viewMode === "lobby" ? (
           <>
             {/* Section 0: Hero/Intro */}
-            <section className="relative flex h-screen items-end md:items-center justify-center text-center px-4 md:px-8 pb-6 md:pb-0">
-              <div className="fade-in-up max-w-6xl">
+            <section className="relative flex h-screen items-end md:items-center justify-center text-center px-4 md:px-8 pb-0">
+              <div className="fade-in-up max-w-6xl pointer-events-auto">
                 <h1 className="mb-6 md:mb-12 text-4xl md:text-8xl font-bold uppercase text-white">
                   West Point <span className="text-[#9e7252]">Virtual Archive</span>
                 </h1>
@@ -188,7 +227,7 @@ export default function Page() {
                 </p>
                 <button
                   onClick={() => setCurrentSection(1)}
-                  className="w-full md:w-auto rounded-3xl border-2 border-white bg-white/10 px-6 md:px-8 py-3 md:py-4 text-base md:text-xl font-bold text-[#9e7252] shadow-[10px_10px_100px_0px_rgba(219,219,219,0.44)] backdrop-blur-md transition-transform duration-300 hover:scale-105 hover:text-white"
+                  className="w-full md:w-auto rounded-3xl border-2 border-white bg-white/10 px-3 py-2 md:px-5 md:py-3 text-base md:text-xl font-bold text-[#9e7252] shadow-[10px_10px_100px_0px_rgba(219,219,219,0.44)] backdrop-blur-md transition-transform duration-300 hover:scale-105 hover:text-white"
                 >
                   Begin Journey
                 </button>
@@ -196,234 +235,579 @@ export default function Page() {
             </section>
 
             {/* Section 1: Maps of West Point */}
-            <section className="relative flex h-screen items-end md:items-center justify-center md:justify-start px-4 md:px-16 pb-4 md:pb-0">
-              <Card className="w-full max-w-md md:w-96 min-h-[32vh] md:min-h-[70vh] rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
-                <CardHeader>
+            <section className="relative flex h-screen items-end md:items-start justify-start md:justify-start pl-0 pr-4 md:pr-16 pt-4 pb-0 md:pt-[12vh] md:pb-0">
+              <Card className="pointer-events-auto w-full max-w-[19.5rem] md:max-w-none md:w-[28rem] rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="pl-3 md:pl-6">
                   <CardTitle className="mb-2 text-2xl md:text-3xl font-bold uppercase text-white/70">Aerial Map of West Point</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <CardDescription className="text-white text-sm md:text-base">
+                <CardContent className="pt-0 pl-0 pr-6 pb-0 md:pb-6">
+                  <CardDescription className="pl-6 text-white text-base md:text-2xl">
                     Redoubt 2, Redoubt 4, Fort Clinton, and Fort Putnam Landmarks Pinned on Google Aerial Satellite Imagery from May 2025.
                   </CardDescription>
                 </CardContent>
-                <CardFooter className="pt-0">
-                  {!isLastSection && (
-                    <button
-                      onClick={goToNextSection}
-                      className="w-full md:w-auto rounded-2xl border-2 border-white bg-white/10 px-6 md:px-8 py-3 md:py-4 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
-                    >
-                      Next →
-                    </button>
-                  )}
+                <CardFooter className="pt-0 pl-0 pr-0 pb-0 md:pb-4">
+                  <div className="flex w-full mr-3 md:mr-6 rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
+                    {!isLastSection && (
+                      <button
+                        onClick={goToNextSection}
+                        className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
+                      >
+                        Next →
+                      </button>
+                    )}
+                  </div>
                 </CardFooter>
               </Card>
             </section>
 
             {/* Section 2: Greenleaf Plan (opposite-facing map) */}
-            <section className="relative flex h-screen items-end md:items-center justify-center md:justify-start px-4 md:px-16 pb-4 md:pb-0">
-              <Card className="w-full max-w-md md:w-96 min-h-[32vh] md:min-h-[70vh] rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
-                <CardHeader>
+            <section className="relative flex h-screen items-end md:items-start justify-start pl-0 pr-4 md:pr-16 pt-4 pb-0 md:pt-[12vh] md:pb-0">
+              <Card className="pointer-events-auto w-full max-w-[19.5rem] md:max-w-none md:w-[28rem] rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="pl-3 md:pl-6">
                   <CardTitle className="mb-2 text-2xl md:text-3xl font-bold uppercase text-white/70">Captain Greenleaf’s Plan</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <CardDescription className="text-white text-sm md:text-base">
+                <CardContent className="pt-0 pl-0 pr-6 pb-0 md:pb-6">
+                  <CardDescription className="pl-6 text-white text-base md:text-2xl">
                     A drawn plan belonging to Captain Moses Greenleaf of the 11th Regiment, who commanded Fort Putnam in the year 1779–1780.
                   </CardDescription>
+                  <a
+                    href="https://www.masshist.org/database/1740"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 ml-6 inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-sm font-medium text-white/90 transition-colors hover:bg-white/20 hover:text-white"
+                  >
+                    Learn more about this map
+                  </a>
                 </CardContent>
-                <CardFooter className="pt-0">
-                  {!isLastSection && (
-                    <button
-                      onClick={goToNextSection}
-                      className="w-full md:w-auto rounded-2xl border-2 border-white bg-white/10 px-6 md:px-8 py-3 md:py-4 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
-                    >
-                      Next →
-                    </button>
-                  )}
+                <CardFooter className="pt-0 pl-0 pr-0 pb-0 md:pb-4">
+                  <div className="flex w-full mr-3 md:mr-6 rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
+                    {!isLastSection && (
+                      <button
+                        onClick={goToNextSection}
+                        className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
+                      >
+                        Next →
+                      </button>
+                    )}
+                  </div>
                 </CardFooter>
               </Card>
             </section>
 
             {/* Section 3: Redoubt 4 */}
-            <section className="relative flex h-screen flex-col justify-between md:justify-center items-center md:items-start px-4 md:px-16 py-4 md:py-0">
-              <Card className="order-2 md:order-1 w-full max-w-md md:w-96 mt-0 md:mt-10 rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
-                <CardHeader className="p-2 md:p-6">
+            <section className="relative flex h-screen flex-row md:flex-col items-end md:items-start justify-start pl-0 pr-2 md:pr-16 pt-4 pb-0 md:pt-[12vh] md:pb-0 gap-2 md:gap-8">
+              <Card className="pointer-events-auto order-1 w-full md:max-w-none md:w-[28rem] shrink-0 mt-0 md:mt-0 rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="p-2 pt-2 pr-2 pb-2 pl-3 md:p-6 md:pt-6 md:pr-6 md:pb-6 md:pl-6">
                   <CardTitle className="mb-0 md:mb-2 text-xl md:text-5xl font-bold uppercase text-white/70">Redoubt 4</CardTitle>
                 </CardHeader>
-                <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-                  <p className="mb-4 md:mb-6 text-white text-sm md:text-base">
-                    A critical earthwork fortification positioned along the southern defensive line of West Point. Built
-                    in 1778-1779, Redoubt 4 was part of the comprehensive defensive system protecting the Hudson River
-                    highlands and played a vital role in securing this strategic military position.
-                  </p>
-                  <div className="flex flex-row flex-wrap gap-3">
+                <CardContent className="p-3 pt-0 pl-0 pr-3 pb-0 md:p-6 md:pt-0 md:pl-0 md:pr-6 md:pb-6">
+                  <div className="flex flex-row gap-2 md:block mb-4 md:mb-6 items-start">
+                    <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
+                      <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-base md:text-2xl">
+                        A critical earthwork fortification positioned along the southern defensive line of West Point. Built
+                        in 1778-1779, Redoubt 4 was part of the comprehensive defensive system protecting the Hudson River
+                        highlands and played a vital role in securing this strategic military position.
+                      </p>
+                    </div>
+                    <div className="shrink-0 md:hidden flex items-start max-w-[45%]">
+                      <div className="scale-[0.82] origin-bottom w-full max-w-full min-w-0">
+                        <DrawerPanel variant="site1" onOpenImageViewer={(src, alt) => setViewerImage({ src, alt })} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex w-full rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
                     <button
                       onClick={() => handleEnterRedoubt("redoubt-4")}
-                      className="w-auto rounded-2xl border-2 border-white bg-white/10 px-6 md:px-8 py-3 md:py-4 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
+                      className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base bg-white/30 border-r-2 border-l-2 border-white/40 transition-colors duration-300 hover:bg-white/40 flex flex-col items-center justify-center gap-1"
                     >
-                      Enter Site →
+                      <span className="text-lg md:text-2xl leading-none">↑</span>
+                      <span className="text-xs md:text-base whitespace-nowrap">Enter Site</span>
                     </button>
                     {!isLastSection && (
-                      <button
-                        onClick={goToNextSection}
-                        className="w-auto rounded-2xl border-2 border-white bg-white/10 px-6 md:px-8 py-3 md:py-4 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
-                      >
-                        Next →
-                      </button>
+                      <>
+                        <div className="w-px bg-white/30" />
+                        <button
+                          onClick={goToNextSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          Next →
+                        </button>
+                      </>
                     )}
                   </div>
                 </CardContent>
               </Card>
-              <div className="order-1 md:order-2 -mt-3 md:mt-3 h-[28vh] md:h-auto flex items-start justify-center md:flex md:justify-center">
-                <div className="w-full max-w-md md:w-96 mx-auto origin-top scale-50 md:scale-75">
-                  <DrawerPanel variant="site1" />
+              <div className="hidden md:flex order-2 pt-0 md:pt-0 mt-0 w-[19.5rem] md:w-full min-h-0 md:h-auto items-end justify-center md:items-start md:justify-start shrink-0 self-end md:self-auto">
+                <div className="w-full max-w-[min(70vw,24rem)] md:max-w-none md:w-96 mx-auto md:mx-0 origin-bottom md:origin-top scale-[0.68] md:scale-75">
+                  <DrawerPanel variant="site1" onOpenImageViewer={(src, alt) => setViewerImage({ src, alt })} />
                 </div>
               </div>
             </section>
 
-            {/* Section 4: Redoubt 5 - Under Construction */}
-            <section className="relative flex h-screen flex-col justify-between md:justify-center items-center md:items-start px-4 md:px-16 py-4 md:py-0">
-              <Card className="order-2 md:order-1 w-full max-w-md md:w-96 mt-0 md:mt-10 rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
-                <CardHeader className="p-2 md:p-6">
-                  <CardTitle className="mb-0 md:mb-2 text-xl md:text-5xl font-bold uppercase text-white/70">Redoubt 5</CardTitle>
+            {/* Section 4: Fort Clinton */}
+            <section className="relative flex h-screen flex-row md:flex-col items-end md:items-start justify-start pl-0 pr-2 md:pr-16 pt-4 pb-0 md:pt-[12vh] md:pb-0 gap-2 md:gap-8">
+              <Card className="pointer-events-auto order-1 w-full md:max-w-none md:w-[28rem] shrink-0 mt-0 md:mt-0 rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="p-2 pt-2 pr-2 pb-2 pl-3 md:p-6 md:pt-6 md:pr-6 md:pb-6 md:pl-6">
+                  <CardTitle className="mb-0 md:mb-2 text-xl md:text-5xl font-bold uppercase text-white/70">Fort Clinton</CardTitle>
                 </CardHeader>
-                <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-                  <div className="mb-3 md:mb-6 inline-block rounded-lg bg-yellow-500/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-yellow-300">
-                    Under Construction
+                <CardContent className="p-3 pt-0 pl-0 pr-3 pb-0 md:p-6 md:pt-0 md:pl-0 md:pr-6 md:pb-6">
+                  <div className="flex flex-row gap-2 md:block mb-4 md:mb-6 items-start">
+                    <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
+                      <div className="mb-3 md:mb-6 pl-3 md:pl-6">
+                        <span className="inline-block rounded-lg bg-yellow-500/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-yellow-300">
+                          Under Construction
+                        </span>
+                      </div>
+                      <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-base md:text-2xl">
+                    A key Hudson River fortification historically paired with Fort Putnam and integral to West Point’s defenses.
+                    This section will include images, files, and research materials specific to Fort Clinton.
+                  </p>
+                    </div>
+                    <div className="shrink-0 md:hidden flex items-start max-w-[45%]">
+                      <div className="scale-[0.82] origin-bottom w-full max-w-full min-w-0">
+                        <DrawerPanel variant="site2" onOpenImageViewer={(src, alt) => setViewerImage({ src, alt })} />
+                      </div>
+                    </div>
                   </div>
-                  <p className="mb-4 md:mb-6 text-white text-sm md:text-base">
+                  <div className="flex w-full rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
+                    <button
+                      disabled
+                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-1.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
+                    >
+                      Coming Soon
+                    </button>
+                    {!isLastSection && (
+                      <>
+                        <div className="w-px bg-white/30" />
+                        <button
+                          onClick={goToNextSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          Next →
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="hidden md:flex order-2 pt-0 md:pt-0 mt-0 w-[19.5rem] md:w-full min-h-0 md:h-auto items-end justify-center md:items-start md:justify-start shrink-0 self-end md:self-auto">
+                <div className="w-full max-w-[min(70vw,24rem)] md:max-w-none md:w-96 mx-auto md:mx-0 origin-bottom md:origin-top scale-[0.68] md:scale-75">
+                  <DrawerPanel variant="site2" onOpenImageViewer={(src, alt) => setViewerImage({ src, alt })} />
+                </div>
+              </div>
+            </section>
+
+            {/* Section 5: Fort Putnam */}
+            <section className="relative flex h-screen flex-row md:flex-col items-end md:items-start justify-start pl-0 pr-2 md:pr-16 pt-4 pb-0 md:pt-[12vh] md:pb-0 gap-2 md:gap-8">
+              <Card className="pointer-events-auto order-1 w-full md:max-w-none md:w-[28rem] shrink-0 mt-0 md:mt-0 rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="p-2 pt-2 pr-2 pb-2 pl-3 md:p-6 md:pt-6 md:pr-6 md:pb-6 md:pl-6">
+                  <CardTitle className="mb-0 md:mb-2 text-xl md:text-5xl font-bold uppercase text-white/70">Fort Putnam</CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 pt-0 pl-0 pr-3 pb-0 md:p-6 md:pt-0 md:pl-0 md:pr-6 md:pb-6">
+                  <div className="flex flex-row gap-2 md:block mb-4 md:mb-6 items-start">
+                    <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
+                      <div className="mb-3 md:mb-6 pl-3 md:pl-6">
+                        <span className="inline-block rounded-lg bg-yellow-500/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-yellow-300">
+                          Under Construction
+                        </span>
+                      </div>
+                      <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-base md:text-2xl">
+                    A key Hudson River fortification historically paired with Fort Clinton, Fort Putnam was integral to West Point's
+                    defenses. This section will include images, files, and research materials specific to Fort Putnam.
+                  </p>
+                    </div>
+                    <div className="shrink-0 md:hidden flex items-start max-w-[45%]">
+                      <div className="scale-[0.82] origin-bottom w-full max-w-full min-w-0">
+                        <DrawerPanel variant="site3" onOpenImageViewer={(src, alt) => setViewerImage({ src, alt })} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex w-full mr-3 md:mr-6 rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
+                    <button
+                      disabled
+                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-1.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
+                    >
+                      Coming Soon
+                    </button>
+                    {!isLastSection && (
+                      <>
+                        <div className="w-px bg-white/30" />
+                        <button
+                          onClick={goToNextSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          Next →
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="hidden md:flex order-2 pt-0 md:pt-0 mt-0 w-[19.5rem] md:w-full min-h-0 md:h-auto items-end justify-center md:items-start md:justify-start shrink-0 self-end md:self-auto">
+                <div className="w-full max-w-[min(70vw,24rem)] md:max-w-none md:w-96 mx-auto md:mx-0 origin-bottom md:origin-top scale-[0.68] md:scale-75">
+                  <DrawerPanel variant="site3" onOpenImageViewer={(src, alt) => setViewerImage({ src, alt })} />
+                </div>
+              </div>
+            </section>
+
+            {/* Section 6: Redoubt 2 (formerly Redoubt 5) - Under Construction */}
+            <section className="relative flex h-screen flex-row md:flex-col items-end md:items-start justify-start pl-0 pr-2 md:pr-16 pt-4 pb-0 md:pt-[12vh] md:pb-0 gap-2 md:gap-8">
+              <Card className="pointer-events-auto order-1 w-full md:max-w-none md:w-[28rem] shrink-0 mt-0 md:mt-0 rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="p-2 pt-2 pr-2 pb-2 pl-3 md:p-6 md:pt-6 md:pr-6 md:pb-6 md:pl-6">
+                  <CardTitle className="mb-0 md:mb-2 text-xl md:text-5xl font-bold uppercase text-white/70">Redoubt 2</CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 pt-0 pl-0 pr-3 pb-0 md:p-6 md:pt-0 md:pl-0 md:pr-6 md:pb-6">
+                  <div className="flex flex-row gap-2 md:block mb-4 md:mb-6 items-start">
+                    <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
+                      <div className="mb-3 md:mb-6 pl-3 md:pl-6">
+                        <span className="inline-block rounded-lg bg-yellow-500/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-yellow-300">
+                          Under Construction
+                        </span>
+                      </div>
+                      <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-base md:text-2xl">
                     Another key fortification in West Point's defensive network, positioned to provide interlocking fields
                     of fire with adjacent redoubts. The digital reconstruction and interactive features for this site are
                     currently in development.
                   </p>
-                  <div className="flex flex-row flex-wrap gap-3">
+                    </div>
+                    <div className="shrink-0 md:hidden flex items-start max-w-[45%]">
+                      <div className="scale-[0.82] origin-bottom w-full max-w-full min-w-0">
+                        <DrawerPanel />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex w-full rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
                     <button
                       disabled
-                      className="w-auto cursor-not-allowed rounded-2xl border-2 border-white/30 bg-white/5 px-6 md:px-8 py-3 md:py-4 font-bold text-white/30 opacity-50"
+                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-1.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
                     >
                       Coming Soon
                     </button>
                     {!isLastSection && (
-                      <button
-                        onClick={goToNextSection}
-                        className="w-auto rounded-2xl border-2 border-white bg-white/10 px-6 md:px-8 py-3 md:py-4 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
-                      >
-                        Next →
-                      </button>
+                      <>
+                        <div className="w-px bg-white/30" />
+                        <button
+                          onClick={goToNextSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          Next →
+                        </button>
+                      </>
                     )}
                   </div>
                 </CardContent>
               </Card>
-              <div className="order-1 md:order-2 -mt-3 md:mt-3 h-[28vh] md:h-auto flex items-start justify-center md:flex md:justify-center">
-                <div className="w-full max-w-md md:w-96 mx-auto origin-top scale-50 md:scale-75">
+              <div className="hidden md:flex order-2 pt-0 md:pt-0 mt-0 w-[19.5rem] md:w-full min-h-0 md:h-auto items-end justify-center md:items-start md:justify-start shrink-0 self-end md:self-auto">
+                <div className="w-full max-w-[min(70vw,24rem)] md:max-w-none md:w-96 mx-auto md:mx-0 origin-bottom md:origin-top scale-[0.68] md:scale-75">
                   <DrawerPanel />
                 </div>
               </div>
             </section>
 
-            {/* Section 5: Fort Clinton */}
-            <section className="relative flex h-screen flex-col justify-between md:justify-center items-center md:items-start px-4 md:px-16 py-4 md:py-0">
-              <Card className="order-2 md:order-1 w-full max-w-md md:w-96 mt-0 md:mt-10 rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
-                <CardHeader className="p-2 md:p-6">
-                  <CardTitle className="mb-0 md:mb-2 text-xl md:text-5xl font-bold uppercase text-white/70">Fort Clinton</CardTitle>
+            {/* Section 7: Batteries */}
+            <section className="relative flex h-screen flex-row md:flex-col items-end md:items-start justify-start pl-0 pr-2 md:pr-16 pt-4 pb-0 md:pt-[12vh] md:pb-0 gap-2 md:gap-8">
+              <Card className="pointer-events-auto order-1 w-full md:max-w-none md:w-[28rem] shrink-0 mt-0 md:mt-0 rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="p-2 pt-2 pr-2 pb-2 pl-3 md:p-6 md:pt-6 md:pr-6 md:pb-6 md:pl-6">
+                  <CardTitle className="mb-0 md:mb-2 text-xl md:text-5xl font-bold uppercase text-white/70">Batteries</CardTitle>
                 </CardHeader>
-                <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-                  <div className="mb-3 md:mb-6 inline-block rounded-lg bg-yellow-500/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-yellow-300">
-                    Under Construction
-                  </div>
-                  <p className="mb-4 md:mb-6 text-white text-sm md:text-base">
-                    A key Hudson River fortification historically paired with Fort Putnam and integral to West Point’s defenses.
-                    This section will include images, files, and research materials specific to Fort Clinton.
+                <CardContent className="p-3 pt-0 pl-0 pr-3 pb-0 md:p-6 md:pt-0 md:pl-0 md:pr-6 md:pb-6">
+                  <div className="flex flex-row gap-2 md:block mb-4 md:mb-6 items-start">
+                    <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
+                      <div className="mb-3 md:mb-6 pl-3 md:pl-6">
+                        <span className="inline-block rounded-lg bg-yellow-500/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-yellow-300">
+                          Under Construction
+                        </span>
+                      </div>
+                      <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-base md:text-2xl">
+                    Artillery battery positions that supported West Point&apos;s defensive network. This section will include
+                    images, files, and research materials specific to the batteries.
                   </p>
-                  <div className="flex flex-row flex-wrap gap-3">
+                    </div>
+                    <div className="shrink-0 md:hidden flex items-start max-w-[45%]">
+                      <div className="scale-[0.82] origin-bottom w-full max-w-full min-w-0">
+                        <DrawerPanel />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex w-full rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
                     <button
                       disabled
-                      className="w-auto cursor-not-allowed rounded-2xl border-2 border-white/30 bg-white/5 px-6 md:px-8 py-3 md:py-4 font-bold text-white/30 opacity-50"
+                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-1.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
                     >
                       Coming Soon
                     </button>
                     {!isLastSection && (
-                      <button
-                        onClick={goToNextSection}
-                        className="w-auto rounded-2xl border-2 border-white bg-white/10 px-6 md:px-8 py-3 md:py-4 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
-                      >
-                        Next →
-                      </button>
+                      <>
+                        <div className="w-px bg-white/30" />
+                        <button
+                          onClick={goToNextSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          Next →
+                        </button>
+                      </>
                     )}
                   </div>
                 </CardContent>
               </Card>
-              <div className="order-1 md:order-2 -mt-3 md:mt-3 h-[28vh] md:h-auto flex items-start justify-center md:flex md:justify-center">
-                <div className="w-full max-w-md md:w-96 mx-auto origin-top scale-50 md:scale-75">
-                  <DrawerPanel variant="site2" />
+              <div className="hidden md:flex order-2 pt-0 md:pt-0 mt-0 w-[19.5rem] md:w-full min-h-0 md:h-auto items-end justify-center md:items-start md:justify-start shrink-0 self-end md:self-auto">
+                <div className="w-full max-w-[min(70vw,24rem)] md:max-w-none md:w-96 mx-auto md:mx-0 origin-bottom md:origin-top scale-[0.68] md:scale-75">
+                  <DrawerPanel />
                 </div>
               </div>
             </section>
 
-            {/* Section 6: Additional Sites */}
-            <section className="relative flex h-screen flex-col justify-between md:justify-center items-center md:items-start px-4 md:px-16 py-4 md:py-0">
-              <Card className="order-2 md:order-1 w-full max-w-md md:w-96 mt-0 md:mt-10 rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
-                <CardHeader className="p-2 md:p-6">
+            {/* Section 8: Fort Webb */}
+            <section className="relative flex h-screen flex-row md:flex-col items-end md:items-start justify-start pl-0 pr-2 md:pr-16 pt-4 pb-0 md:pt-[12vh] md:pb-0 gap-2 md:gap-8">
+              <Card className="pointer-events-auto order-1 w-full md:max-w-none md:w-[28rem] shrink-0 mt-0 md:mt-0 rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="p-2 pt-2 pr-2 pb-2 pl-3 md:p-6 md:pt-6 md:pr-6 md:pb-6 md:pl-6">
+                  <CardTitle className="mb-0 md:mb-2 text-xl md:text-5xl font-bold uppercase text-white/70">Fort Webb</CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 pt-0 pl-0 pr-3 pb-0 md:p-6 md:pt-0 md:pl-0 md:pr-6 md:pb-6">
+                  <div className="flex flex-row gap-2 md:block mb-4 md:mb-6 items-start">
+                    <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
+                      <div className="mb-3 md:mb-6 pl-3 md:pl-6">
+                        <span className="inline-block rounded-lg bg-yellow-500/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-yellow-300">
+                          Under Construction
+                        </span>
+                      </div>
+                      <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-base md:text-2xl">
+                    A key fortification in the West Point defensive complex. This section will include images, files,
+                    and research materials specific to Fort Webb.
+                  </p>
+                    </div>
+                    <div className="shrink-0 md:hidden flex items-start max-w-[45%]">
+                      <div className="scale-[0.82] origin-bottom w-full max-w-full min-w-0">
+                        <DrawerPanel />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex w-full rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
+                    <button
+                      disabled
+                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-1.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
+                    >
+                      Coming Soon
+                    </button>
+                    {!isLastSection && (
+                      <>
+                        <div className="w-px bg-white/30" />
+                        <button
+                          onClick={goToNextSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          Next →
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="hidden md:flex order-2 pt-0 md:pt-0 mt-0 w-[19.5rem] md:w-full min-h-0 md:h-auto items-end justify-center md:items-start md:justify-start shrink-0 self-end md:self-auto">
+                <div className="w-full max-w-[min(70vw,24rem)] md:max-w-none md:w-96 mx-auto md:mx-0 origin-bottom md:origin-top scale-[0.68] md:scale-75">
+                  <DrawerPanel />
+                </div>
+              </div>
+            </section>
+
+            {/* Section 9: Additional Sites */}
+            <section className="relative flex h-screen flex-row md:flex-col items-end md:items-start justify-start pl-0 pr-2 md:pr-16 pt-4 pb-0 md:pt-[12vh] md:pb-0 gap-2 md:gap-8">
+              <Card className="pointer-events-auto order-1 w-full md:max-w-none md:w-[28rem] shrink-0 mt-0 md:mt-0 rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="p-2 pt-2 pr-2 pb-2 pl-3 md:p-6 md:pt-6 md:pr-6 md:pb-6 md:pl-6">
                   <CardTitle className="mb-0 md:mb-2 text-xl md:text-5xl font-bold uppercase text-white/70">Additional Sites</CardTitle>
                 </CardHeader>
-                <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-                  <div className="mb-3 md:mb-6 inline-block rounded-lg bg-yellow-500/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-yellow-300">
-                    Under Construction
-                  </div>
-                  <p className="mb-4 md:mb-6 text-white text-sm md:text-base">
+                <CardContent className="p-3 pt-0 pl-0 pr-3 pb-0 md:p-6 md:pt-0 md:pl-0 md:pr-6 md:pb-6">
+                  <div className="flex flex-row gap-2 md:block mb-4 md:mb-6 items-start">
+                    <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
+                      <div className="mb-3 md:mb-6 pl-3 md:pl-6">
+                        <span className="inline-block rounded-lg bg-yellow-500/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-yellow-300">
+                          Under Construction
+                        </span>
+                      </div>
+                      <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-base md:text-2xl">
                     More Revolutionary War heritage sites are being prepared for virtual exploration. Future additions
                     will include additional redoubts, fortifications, and archaeological features from the West Point
                     defensive complex.
                   </p>
-                  <div className="flex flex-row flex-wrap gap-3">
+                    </div>
+                    <div className="shrink-0 md:hidden flex items-start max-w-[45%]">
+                      <div className="scale-[0.82] origin-bottom w-full max-w-full min-w-0">
+                        <DrawerPanel />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex w-full mr-3 md:mr-6 rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
                     <button
                       disabled
-                      className="w-auto cursor-not-allowed rounded-2xl border-2 border-white/30 bg-white/5 px-6 md:px-8 py-3 md:py-4 font-bold text-white/30 opacity-50"
+                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-1.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
                     >
                       Coming Soon
                     </button>
                     {!isLastSection && (
-                      <button
-                        onClick={goToNextSection}
-                        className="w-auto rounded-2xl border-2 border-white bg-white/10 px-6 md:px-8 py-3 md:py-4 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
-                      >
-                        Next →
-                      </button>
+                      <>
+                        <div className="w-px bg-white/30" />
+                        <button
+                          onClick={goToNextSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          Next →
+                        </button>
+                      </>
                     )}
                   </div>
                 </CardContent>
               </Card>
-              <div className="order-1 md:order-2 -mt-3 md:mt-3 h-[28vh] md:h-auto flex items-start justify-center md:flex md:justify-center">
-                <div className="w-full max-w-md md:w-96 mx-auto origin-top scale-50 md:scale-75">
+              <div className="hidden md:flex order-2 pt-0 md:pt-0 mt-0 w-[19.5rem] md:w-full min-h-0 md:h-auto items-end justify-center md:items-start md:justify-start shrink-0 self-end md:self-auto">
+                <div className="w-full max-w-[min(70vw,24rem)] md:max-w-none md:w-96 mx-auto md:mx-0 origin-bottom md:origin-top scale-[0.68] md:scale-75">
                   <DrawerPanel />
                 </div>
               </div>
             </section>
 
-            {/* Section 7: About */}
-            <section className="relative flex h-screen items-end md:items-center justify-center md:justify-start px-4 md:px-16 pb-4 md:pb-0">
-              <Card className="w-full max-w-md md:w-96 min-h-[32vh] md:min-h-[70vh] rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
-                <CardHeader>
+            {/* Section 8: About */}
+            <section className="relative flex h-screen items-end md:items-start justify-start pl-0 pr-4 md:pr-16 pt-4 pb-0 md:pt-[12vh] md:pb-0">
+              <Card className="pointer-events-auto w-full max-w-[19.5rem] md:max-w-none md:w-[28rem] rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="pl-3 md:pl-6">
                   <CardTitle className="mb-2 text-3xl md:text-5xl font-bold uppercase text-white/70">Cultural Heritage</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="mb-4 md:mb-6 text-white text-sm md:text-base">
+                <CardContent className="pt-0 pl-0 pr-6 pb-0 md:pb-6">
+                  <p className="mb-4 md:mb-6 pl-6 text-white text-base md:text-2xl">
                     These Revolutionary War earthwork fortifications at West Point, NY represent critical defensive
                     positions during the American Revolution.
                   </p>
-                  <p className="text-white/80 text-sm md:text-base">
+                  <p className="pl-6 text-white/80 text-base md:text-2xl">
                     Built in 1778-1779, these redoubts protected the strategic Hudson River valley and helped secure
                     American independence.
                   </p>
                 </CardContent>
-                <CardFooter className="pt-0">
-                  {!isLastSection && (
-                    <button
-                      onClick={goToNextSection}
-                      className="w-full md:w-auto rounded-2xl border-2 border-white bg-white/10 px-6 md:px-8 py-3 md:py-4 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
-                    >
-                      Next →
-                    </button>
-                  )}
+                <CardFooter className="pt-0 pl-0 pr-0 pb-0 md:pb-4">
+                  <div className="flex w-full mr-3 md:mr-6 rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
+                    {isLastSection ? (
+                      <button
+                        onClick={() => setCurrentSection(0)}
+                        className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
+                      >
+                        Back to Home
+                      </button>
+                    ) : (
+                      <button
+                        onClick={goToNextSection}
+                        className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
+                      >
+                        Next →
+                      </button>
+                    )}
+                  </div>
                 </CardFooter>
               </Card>
             </section>
@@ -431,17 +815,17 @@ export default function Page() {
         ) : (
           <>
             {/* Redoubt Detail Sections */}
-            <section className="relative flex h-screen items-start md:items-center justify-center md:justify-start px-4 md:px-16 pt-4 md:pt-0">
-              <Card className="w-full max-w-md md:w-96 min-h-[32vh] md:min-h-[70vh] rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
-                <CardHeader>
+            <section className="relative flex h-screen items-start md:items-center justify-start pl-0 pr-4 md:pr-16 pt-4 pb-0 md:pt-0 md:pb-0">
+              <Card className="pointer-events-auto w-full max-w-[19.5rem] md:max-w-none md:w-[28rem] rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="pl-3 md:pl-6">
                   <CardTitle className="mb-2 text-3xl md:text-5xl font-bold uppercase text-white/70">
                     {viewMode === "redoubt-4" && "Main Earthwork Rampart"}
                     {viewMode === "redoubt-5" && "Front Glacis"}
                     {viewMode === "coming-soon" && "V-Shaped Salient"}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="mb-4 md:mb-6 text-white text-sm md:text-base">
+                <CardContent className="pt-0 pl-0 pr-6 pb-0 md:pb-6">
+                  <p className="mb-4 md:mb-6 pl-6 pr-0 text-white text-base md:text-2xl">
                     {viewMode === "redoubt-4" &&
                       "The primary defensive wall, constructed from packed earth and reinforced with timber. This rampart provided protection from artillery fire while offering elevated firing positions for defenders."}
                     {viewMode === "redoubt-5" &&
@@ -452,23 +836,37 @@ export default function Page() {
                   {viewMode === "redoubt-4" && (
                     <button
                       onClick={handleToggleGPR}
-                      className="mb-4 w-full md:w-auto rounded-2xl border-2 border-[#00ff00] bg-[#00ff00]/10 px-6 py-3 font-bold text-[#00ff00] transition-transform duration-300 hover:scale-105 hover:bg-[#00ff00]/20"
+                      className="mb-4 ml-6 w-full md:w-auto rounded-2xl border-2 border-[#00ff00] bg-[#00ff00]/10 px-6 py-3 font-bold text-[#00ff00] transition-transform duration-300 hover:scale-105 hover:bg-[#00ff00]/20"
                     >
                       {isGPRActive ? "Hide GPR Data" : "View GPR Scan"}
                     </button>
                   )}
-                  <div className="flex flex-row flex-wrap gap-3">
+                  <div className="flex w-full rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-6 py-3 font-bold text-white whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
                     {!isLastSection && (
-                      <button
-                        onClick={goToNextSection}
-                        className="w-auto rounded-2xl border-2 border-white bg-white/10 px-6 py-3 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
-                      >
-                        Next →
-                      </button>
+                      <>
+                        <button
+                          onClick={goToNextSection}
+                          className={`${isFirstSection ? 'flex-1' : 'flex-1'} px-6 py-3 font-bold text-white whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
+                        >
+                          Next →
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
                     )}
                     <button
                       onClick={handleBackToLobby}
-                      className="w-auto rounded-2xl border-2 border-white bg-white/10 px-6 py-3 font-bold text-[#8B4513] transition-transform duration-300 hover:scale-105 hover:text-white"
+                      className="flex-1 px-6 py-3 font-bold text-[#8B4513] whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                     >
                       ← Back to Lobby
                     </button>
@@ -477,17 +875,17 @@ export default function Page() {
               </Card>
             </section>
 
-            <section className="relative flex h-screen items-start md:items-center justify-center md:justify-start px-4 md:px-16 pt-4 md:pt-0">
-              <Card className="w-full max-w-md md:w-96 min-h-[32vh] md:min-h-[70vh] rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
-                <CardHeader>
+            <section className="relative flex h-screen items-start md:items-center justify-start pl-0 pr-4 md:pr-16 pt-4 pb-0 md:pt-0 md:pb-0">
+              <Card className="pointer-events-auto w-full max-w-[19.5rem] md:max-w-none md:w-[28rem] rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="pl-3 md:pl-6">
                   <CardTitle className="mb-2 text-2xl md:text-4xl font-bold uppercase text-white/70">
                     {viewMode === "redoubt-4" && "Western Bastion"}
                     {viewMode === "redoubt-5" && "Breach Point"}
                     {viewMode === "coming-soon" && "Left Flank"}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-white text-sm md:text-base">
+                <CardContent className="pt-0 pl-0 pr-6 pb-0 md:pb-6">
+                  <p className="pl-6 pr-0 text-white text-base md:text-2xl">
                     {viewMode === "redoubt-4" &&
                       "This projecting bastion provided flanking fire along the western wall. Defenders stationed here could engage attackers attempting to scale the ramparts, creating a deadly crossfire."}
                     {viewMode === "redoubt-5" &&
@@ -495,29 +893,51 @@ export default function Page() {
                     {viewMode === "coming-soon" &&
                       "The left wing of the fleche extends to cover the approach from the west. This position allowed enfilade fire against any flanking maneuvers by attacking forces."}
                   </p>
-                  {!isLastSection && (
+                  <div className="flex w-full mr-3 md:mr-6 rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden md:mt-4">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-6 py-3 font-bold text-white whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
+                    {!isLastSection && (
+                      <>
+                        <button
+                          onClick={goToNextSection}
+                          className={`${isFirstSection ? 'flex-1' : 'flex-1'} px-6 py-3 font-bold text-white whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
+                        >
+                          Next →
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
                     <button
-                      onClick={goToNextSection}
-                      className="mt-4 w-full md:w-auto rounded-2xl border-2 border-white bg-white/10 px-6 py-3 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
+                      onClick={handleBackToLobby}
+                      className="flex-1 px-6 py-3 font-bold text-[#8B4513] whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                     >
-                      Next →
+                      ← Back to Lobby
                     </button>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             </section>
 
-            <section className="relative flex h-screen items-start md:items-center justify-center md:justify-start px-4 md:px-16 pt-4 md:pt-0">
-              <Card className="w-full max-w-md md:w-96 min-h-[32vh] md:min-h-[70vh] rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
-                <CardHeader>
+            <section className="relative flex h-screen items-start md:items-center justify-start pl-0 pr-4 md:pr-16 pt-4 pb-0 md:pt-0 md:pb-0">
+              <Card className="pointer-events-auto w-full max-w-[19.5rem] md:max-w-none md:w-[28rem] rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="pl-3 md:pl-6">
                   <CardTitle className="mb-2 text-2xl md:text-4xl font-bold uppercase text-white/70">
                     {viewMode === "redoubt-4" && "Artillery Positions"}
                     {viewMode === "redoubt-5" && "Inner Parade Ground"}
                     {viewMode === "coming-soon" && "Right Flank"}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-white text-sm md:text-base">
+                <CardContent className="pt-0 pl-0 pr-6 pb-0 md:pb-6">
+                  <p className="px-6 text-white text-base md:text-2xl">
                     {viewMode === "redoubt-4" &&
                       "Strategic cannon emplacements commanding the Hudson River valley. These positions could engage ships, fortifications, and troop formations at considerable distance."}
                     {viewMode === "redoubt-5" &&
@@ -525,29 +945,51 @@ export default function Page() {
                     {viewMode === "coming-soon" &&
                       "The right wing extends to control the eastern approach. Combined with the left flank, these positions created a killing zone in front of the fortification."}
                   </p>
-                  {!isLastSection && (
+                  <div className="flex w-full mr-3 md:mr-6 rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden md:mt-4">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-6 py-3 font-bold text-white whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
+                    {!isLastSection && (
+                      <>
+                        <button
+                          onClick={goToNextSection}
+                          className={`${isFirstSection ? 'flex-1' : 'flex-1'} px-6 py-3 font-bold text-white whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
+                        >
+                          Next →
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
                     <button
-                      onClick={goToNextSection}
-                      className="mt-4 w-full md:w-auto rounded-2xl border-2 border-white bg-white/10 px-6 py-3 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
+                      onClick={handleBackToLobby}
+                      className="flex-1 px-6 py-3 font-bold text-[#8B4513] whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                     >
-                      Next →
+                      ← Back to Lobby
                     </button>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             </section>
 
-            <section className="relative flex h-screen items-start md:items-center justify-center md:justify-start px-4 md:px-16 pt-4 md:pt-0">
-              <Card className="w-full max-w-md md:w-96 min-h-[32vh] md:min-h-[70vh] rounded-[40px] border-2 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
-                <CardHeader>
+            <section className="relative flex h-screen items-start md:items-center justify-start pl-0 pr-4 md:pr-16 pt-4 pb-0 md:pt-0 md:pb-0">
+              <Card className="pointer-events-auto w-full max-w-[19.5rem] md:max-w-none md:w-[28rem] rounded-l-none rounded-tr-[40px] rounded-br-none md:rounded-r-[40px] border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 h-auto flex flex-col md:flex-initial bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)]">
+                <CardHeader className="pl-3 md:pl-6">
                   <CardTitle className="mb-2 text-2xl md:text-4xl font-bold uppercase text-white/70">
                     {viewMode === "redoubt-4" && "Strategic Overview"}
                     {viewMode === "redoubt-5" && "Complete Fortification"}
                     {viewMode === "coming-soon" && "Tactical Analysis"}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="mb-4 md:mb-6 text-white text-sm md:text-base">
+                <CardContent className="pt-0 pl-0 pr-6 pb-0 md:pb-6">
+                  <p className="mb-4 md:mb-6 pl-6 pr-0 text-white text-base md:text-2xl">
                     {viewMode === "redoubt-4" &&
                       "From this elevated perspective, the complete defensive system becomes clear. The redoubt's position on high ground provided commanding views and interlocking fire with adjacent fortifications."}
                     {viewMode === "redoubt-5" &&
@@ -555,18 +997,32 @@ export default function Page() {
                     {viewMode === "coming-soon" &&
                       "The V-shaped geometry represents advanced 18th-century military engineering. This design maximized defensive firepower while minimizing the fortification's profile and construction requirements."}
                   </p>
-                  <div className="flex flex-row flex-wrap gap-3">
+                  <div className="flex w-full rounded-l-none rounded-tr-2xl rounded-br-none md:rounded-r-2xl border-2 border-l-0 border-b-0 md:border-b-2 border-white/30 bg-white/10 overflow-hidden">
+                    {!isFirstSection && (
+                      <>
+                        <button
+                          onClick={goToPreviousSection}
+                          className="flex-1 px-6 py-3 font-bold text-white whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                        >
+                          ← Previous
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
+                    )}
                     {!isLastSection && (
-                      <button
-                        onClick={goToNextSection}
-                        className="w-auto rounded-2xl border-2 border-white bg-white/10 px-6 py-3 font-bold text-white transition-transform duration-300 hover:scale-105 hover:text-white"
-                      >
-                        Next →
-                      </button>
+                      <>
+                        <button
+                          onClick={goToNextSection}
+                          className={`${isFirstSection ? 'flex-1' : 'flex-1'} px-6 py-3 font-bold text-white whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
+                        >
+                          Next →
+                        </button>
+                        <div className="w-px bg-white/30" />
+                      </>
                     )}
                     <button
                       onClick={handleBackToLobby}
-                      className="w-auto rounded-2xl border-2 border-white bg-white/10 px-6 py-3 font-bold text-[#8B4513] transition-transform duration-300 hover:scale-105 hover:text-white"
+                      className="flex-1 px-6 py-3 font-bold text-[#8B4513] whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                     >
                       ← Back to Lobby
                     </button>
@@ -578,7 +1034,7 @@ export default function Page() {
         )}
       </div>
 
-      <NavigationDots total={viewMode === "lobby" ? 8 : 4} active={currentSection} onChange={setCurrentSection} />
+      <NavigationDots total={viewMode === "lobby" ? 11 : 4} active={currentSection} onChange={setCurrentSection} labels={navigationLabels} />
       <LoadingScreen isVisible={isLoading} />
     </div>
   )

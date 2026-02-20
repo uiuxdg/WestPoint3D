@@ -1,26 +1,46 @@
 "use client"
 
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState, useMemo } from "react"
 import { useFrame, useThree } from "@react-three/fiber"
-import { Environment, Stars, useGLTF, useTexture } from "@react-three/drei"
+import { Environment, RoundedBox, Stars, useGLTF, useTexture } from "@react-three/drei"
 import * as THREE from "three"
+
+/** Configure a texture for high-resolution display on 3D frames (sharp filtering, anisotropy, correct color space). */
+function useHighQualityTexture(imageUrl: string) {
+  const gl = useThree((s) => s.gl)
+  const texture = useTexture(imageUrl, (tex: THREE.Texture) => {
+    tex.minFilter = THREE.LinearMipmapLinearFilter
+    tex.magFilter = THREE.LinearFilter
+    tex.generateMipmaps = true
+    tex.colorSpace = THREE.SRGBColorSpace
+  })
+  useEffect(() => {
+    if (!texture || typeof (gl as { getMaxAnisotropy?: () => number }).getMaxAnisotropy !== "function") return
+    const maxAnisotropy = (gl as { getMaxAnisotropy: () => number }).getMaxAnisotropy()
+    texture.anisotropy = maxAnisotropy
+  }, [texture, gl])
+  return texture
+}
 import gsap from "gsap"
 
 interface LobbySceneProps {
   section: number
   mousePosition: { x: number; y: number }
+  onFrameClick?: (imageUrl: string) => void
 }
 
 const CAMERA_POSITIONS = [
   { position: { x: -8, y: 2, z: 20 }, lookAt: { x: 20, y: 2, z: -100 } }, // Section 0: Hero/Overview
-  // Section 1: Maps of West Point — same position as Section 0 but rotated ~90° to the right
-  { position: { x: -4, y: 5, z: 20 }, lookAt: { x: 112, y: 12, z: 20 } },
-  // Section 2: Greenleaf plan — same camera position, opposite lookAt direction as Section 1
-  { position: { x: -3, y: 5, z: 20 }, lookAt: { x: -112, y: 12, z: 20 } },
+  { position: { x: -4, y: 5, z: 20 }, lookAt: { x: 112, y: 12, z: 20 } }, // Section 1: Maps of West Point
+  { position: { x: -3, y: 5, z: 20 }, lookAt: { x: -112, y: 12, z: 20 } }, // Section 2: Greenleaf plan
   { position: { x: -8, y: 2, z: 5 }, lookAt: { x: -8, y: 2, z: -100 } }, // Section 3: Redoubt 4 (left)
-  { position: { x: 17, y: 2, z: 5 }, lookAt: { x: 17, y: 2, z: -100 } }, // Section 4: Redoubt 5 (center)
-  { position: { x: 42, y: 2, z: 5 }, lookAt: { x: 42, y: 2, z: -100 } }, // Section 5: Fort Clinton (right)
-  { position: { x: 60.75, y: 2, z: 5 }, lookAt: { x: 60.75, y: 2, z: -100 } }, // Section 6: Additional Sites (25% closer, shifted left)
+  { position: { x: 17, y: 2, z: 5 }, lookAt: { x: 17, y: 2, z: -100 } }, // Section 4: Fort Clinton (center)
+  { position: { x: 42, y: 2, z: 5 }, lookAt: { x: 42, y: 2, z: -100 } }, // Section 5: Fort Putnam (right)
+  { position: { x: 60.75, y: 2, z: 5 }, lookAt: { x: 60.75, y: 2, z: -100 } }, // Section 6: Redoubt 2 (-Z row)
+  { position: { x: 60.75, y: 2, z: 5 }, lookAt: { x: 60.75, y: 2, z: 110 } }, // Section 7: Batteries (+Z row, across from Redoubt 2)
+  { position: { x: 42, y: 2, z: 5 }, lookAt: { x: 42, y: 2, z: 110 } }, // Section 8: Fort Webb (+Z row, across from Fort Putnam)
+  { position: { x: 21.75, y: 2, z: 5 }, lookAt: { x: 21.75, y: 2, z: 110 } }, // Section 9: Additional Sites (+Z row, 20% toward Fort Webb to avoid wall clip)
+  { position: { x: 21.75, y: 2, z: 5 }, lookAt: { x: 21.75, y: 2, z: 110 } }, // Section 10: Cultural Heritage (same as 9)
 ]
 
 function getAdjustedPosition(
@@ -42,36 +62,205 @@ function LobbyModel() {
   return <primitive object={scene} position={[17, 0, 0]} scale={4} />
 }
 
+const FRAME_TEXTURE_URL = "/images/frametexture.png"
+
+/** Pill shape (rectangle with semicircular ends) for gold rim strips; length along x, width along y */
+function createPillShape(length: number, width: number): THREE.Shape {
+  const r = width / 2
+  const leftX = -length / 2 + r
+  const rightX = length / 2 - r
+  const shape = new THREE.Shape()
+  shape.moveTo(leftX, -r)
+  shape.lineTo(leftX, r)
+  shape.absarc(rightX, 0, r, Math.PI / 2, -Math.PI / 2, false)
+  shape.lineTo(leftX, -r)
+  shape.absarc(leftX, 0, r, -Math.PI / 2, Math.PI / 2, false)
+  return shape
+}
+
 function PictureFrame({
   position,
   imageUrl,
   rotation,
   scale,
+  onFrameClick,
 }: {
   position: [number, number, number]
   imageUrl: string
   rotation?: [number, number, number]
   scale?: number
+  onFrameClick?: (imageUrl: string) => void
 }) {
-  const texture = useTexture(imageUrl)
+  const texture = useHighQualityTexture(imageUrl)
+  const frameTexture = useTexture(FRAME_TEXTURE_URL)
+  const [hovered, setHovered] = useState(false)
+  const glowRef = useRef(0)
+  const frameMatRef = useRef<THREE.MeshStandardMaterial>(null!)
+  const goldMatRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([])
+  const emissiveColorRef = useRef(new THREE.Color("#000000"))
+  const goldColorRef = useRef(new THREE.Color("#d4af37"))
+
+  const imageW = 7.6
+  const imageH = 5.6
+  const goldBorderWidth = 0.06
+  const goldZ = 0.159
+  const goldZOffset = 0
+
+  const goldRimExtrudeSettings: THREE.ExtrudeGeometryOptions = useMemo(
+    () => ({
+      depth: 0.02,
+      bevelEnabled: true,
+      bevelSize: 0.002,
+      bevelThickness: 0.002,
+      bevelSegments: 2,
+    }),
+    [],
+  )
+  const goldRimGeoHorizontal = useMemo(() => {
+    const shape = createPillShape(imageW, goldBorderWidth)
+    const geo = new THREE.ExtrudeGeometry(shape, goldRimExtrudeSettings)
+    geo.center()
+    return geo
+  }, [imageW, goldBorderWidth, goldRimExtrudeSettings])
+  const goldRimGeoVertical = useMemo(() => {
+    const shape = createPillShape(imageH, goldBorderWidth)
+    const geo = new THREE.ExtrudeGeometry(shape, goldRimExtrudeSettings)
+    geo.center()
+    return geo
+  }, [imageH, goldBorderWidth, goldRimExtrudeSettings])
+
+  useFrame((_, delta) => {
+    const target = hovered ? 1 : 0
+    glowRef.current += (target - glowRef.current) * Math.min(1, delta * 4)
+    const g = glowRef.current
+    const emissive = g > 0.01 ? goldColorRef.current : emissiveColorRef.current
+    const intensity = g * 0.25
+    if (frameMatRef.current) {
+      frameMatRef.current.emissive.copy(emissive)
+      frameMatRef.current.emissiveIntensity = intensity
+    }
+    goldMatRefs.current.forEach((mat) => {
+      if (mat) {
+        mat.emissive.copy(emissive)
+        mat.emissiveIntensity = intensity
+      }
+    })
+  })
 
   return (
     <group position={position} rotation={rotation} scale={scale ?? 1}>
-      {/* Frame border */}
-      <mesh>
-        <boxGeometry args={[8.4, 6.4, 0.3]} />
-        <meshStandardMaterial color="#3d2817" />
+      {/* Frame border (slightly rounded corners and edges); positioned back so front face aligns with original box at z=0.15 */}
+      <RoundedBox
+        position={[0, 0, -0.08]}
+        args={[8.4, 6.4, 0.3 + 2 * 0.08]}
+        radius={0.08}
+        smoothness={4}
+        onPointerOver={(e) => {
+          e.stopPropagation()
+          setHovered(true)
+        }}
+        onPointerOut={() => setHovered(false)}
+        onClick={(e) => {
+          e.stopPropagation()
+          onFrameClick?.(imageUrl)
+        }}
+      >
+        <meshStandardMaterial
+          ref={frameMatRef}
+          map={frameTexture}
+          color="#ffffff"
+          emissive="#000000"
+          emissiveIntensity={0}
+        />
+      </RoundedBox>
+      {/* Gold rim around image (pill-shaped strips with rounded ends) */}
+      <mesh
+        position={[0, imageH / 2 + goldBorderWidth / 2, goldZ]}
+        geometry={goldRimGeoHorizontal}
+        onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
+        onPointerOut={() => setHovered(false)}
+        onClick={(e) => { e.stopPropagation(); onFrameClick?.(imageUrl) }}
+      >
+        <meshStandardMaterial
+          ref={(el) => { goldMatRefs.current[0] = el }}
+          color="#c9a227"
+          metalness={0.6}
+          roughness={0.3}
+          emissive="#000000"
+          emissiveIntensity={0}
+        />
       </mesh>
-      {/* Image */}
-      <mesh position={[0, 0, 0.16]}>
-        <planeGeometry args={[7.6, 5.6]} />
+      <mesh
+        position={[0, -(imageH / 2 + goldBorderWidth / 2), goldZ]}
+        geometry={goldRimGeoHorizontal}
+        onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
+        onPointerOut={() => setHovered(false)}
+        onClick={(e) => { e.stopPropagation(); onFrameClick?.(imageUrl) }}
+      >
+        <meshStandardMaterial
+          ref={(el) => { goldMatRefs.current[1] = el }}
+          color="#c9a227"
+          metalness={0.6}
+          roughness={0.3}
+          emissive="#000000"
+          emissiveIntensity={0}
+        />
+      </mesh>
+      <mesh
+        position={[-(imageW / 2 + goldBorderWidth / 2), 0, goldZ]}
+        rotation={[0, 0, Math.PI / 2]}
+        geometry={goldRimGeoVertical}
+        onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
+        onPointerOut={() => setHovered(false)}
+        onClick={(e) => { e.stopPropagation(); onFrameClick?.(imageUrl) }}
+      >
+        <meshStandardMaterial
+          ref={(el) => { goldMatRefs.current[2] = el }}
+          color="#c9a227"
+          metalness={0.6}
+          roughness={0.3}
+          emissive="#000000"
+          emissiveIntensity={0}
+        />
+      </mesh>
+      <mesh
+        position={[imageW / 2 + goldBorderWidth / 2, 0, goldZ]}
+        rotation={[0, 0, Math.PI / 2]}
+        geometry={goldRimGeoVertical}
+        onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
+        onPointerOut={() => setHovered(false)}
+        onClick={(e) => { e.stopPropagation(); onFrameClick?.(imageUrl) }}
+      >
+        <meshStandardMaterial
+          ref={(el) => { goldMatRefs.current[3] = el }}
+          color="#c9a227"
+          metalness={0.6}
+          roughness={0.3}
+          emissive="#000000"
+          emissiveIntensity={0}
+        />
+      </mesh>
+      {/* Image - also clickable */}
+      <mesh
+        position={[0, 0, 0.16]}
+        onPointerOver={(e) => {
+          e.stopPropagation()
+          setHovered(true)
+        }}
+        onPointerOut={() => setHovered(false)}
+        onClick={(e) => {
+          e.stopPropagation()
+          onFrameClick?.(imageUrl)
+        }}
+      >
+        <planeGeometry args={[imageW, imageH]} />
         <meshStandardMaterial map={texture} side={THREE.DoubleSide} />
       </mesh>
     </group>
   )
 }
 
-export function LobbyScene({ section, mousePosition }: LobbySceneProps) {
+export function LobbyScene({ section, mousePosition, onFrameClick }: LobbySceneProps) {
   const { camera } = useThree()
   const groupRef = useRef<any>(null)
   const cameraTargetRef = useRef(new THREE.Vector3(17, 2, -100))
@@ -138,7 +327,7 @@ export function LobbyScene({ section, mousePosition }: LobbySceneProps) {
       maxAngleRadiansX,
     )
     targetDirectionRef.current.y = THREE.MathUtils.clamp(
-      mousePosition.y * maxAngleRadiansY,
+      -mousePosition.y * maxAngleRadiansY,
       -maxAngleRadiansY,
       maxAngleRadiansY,
     )
@@ -206,16 +395,38 @@ export function LobbyScene({ section, mousePosition }: LobbySceneProps) {
 
       <group ref={groupRef}>
         {/* Picture frame for Redoubt 4 - Section 1: lookAt (-8, 2, -100) + 0.9 * (camera (-8, 2, 5) - lookAt) */}
-        <PictureFrame position={[-6.5, 3.2, -5.5]} imageUrl="/images/redoubt4.png" />
+        <PictureFrame position={[-6.5, 3.2, -5.5]} imageUrl="/images/redoubt4.png" onFrameClick={onFrameClick} />
 
-        {/* Picture frame for Redoubt 5 - Section 2: lookAt (17, 2, -100) + 0.9 * (camera (17, 2, 5) - lookAt) */}
-        <PictureFrame position={[18.5, 3.2, -5.5]} imageUrl="/images/ccaa-logo-square.jpg" />
+        {/* -Z row: Fort Clinton (Section 4) */}
+        <PictureFrame position={[18.5, 3.2, -5.5]} imageUrl="/images/ClintonCover.png" onFrameClick={onFrameClick} />
 
-        {/* Picture frame for Fort Clinton - Section 3: lookAt (42, 2, -100) + 0.9 * (camera (42, 2, 5) - lookAt) */}
-        <PictureFrame position={[43.5, 3.2, -5.5]} imageUrl="/images/ccaa-logo-square.jpg" />
+        {/* -Z row: Fort Putnam (Section 5) */}
+        <PictureFrame position={[43.5, 3.2, -5.5]} imageUrl="/images/Fort Putnam/IMG_0065.jpeg" onFrameClick={onFrameClick} />
 
-        {/* Picture frame for Additional Sites - Section 4: lookAt (60.75, 2, -100) + 0.9 * (camera (60.75, 2, 5) - lookAt) */}
-        <PictureFrame position={[62.25, 3.2, -5.5]} imageUrl="/images/ccaa-logo-square.jpg" />
+        {/* -Z row: Redoubt 2 (Section 6) */}
+        <PictureFrame position={[62.25, 3.2, -5.5]} imageUrl="/images/redoubt2.jpg" onFrameClick={onFrameClick} />
+
+        {/* +Z row: Batteries (Section 7) across from Redoubt 2 */}
+        <PictureFrame
+          position={[62.25, 3.2, 15.5]}
+          imageUrl="/images/ccaa-logo-square.jpg"
+          rotation={[0, Math.PI, 0]}
+          onFrameClick={onFrameClick}
+        />
+        {/* +Z row: Fort Webb (Section 8) across from Fort Putnam */}
+        <PictureFrame
+          position={[43.5, 3.2, 15.5]}
+          imageUrl="/images/ccaa-logo-square.jpg"
+          rotation={[0, Math.PI, 0]}
+          onFrameClick={onFrameClick}
+        />
+        {/* +Z row: Additional Sites (Section 9) 20% toward Fort Webb to avoid wall clip */}
+        <PictureFrame
+          position={[23.25, 3.2, 15.5]}
+          imageUrl="/images/ccaa-logo-square.jpg"
+          rotation={[0, Math.PI, 0]}
+          onFrameClick={onFrameClick}
+        />
 
         {/* Maps of West Point framed image at absolute position, facing -X */}
         <PictureFrame
@@ -223,6 +434,7 @@ export function LobbyScene({ section, mousePosition }: LobbySceneProps) {
           imageUrl="/images/west point redoubts map.png"
           rotation={[0, -Math.PI / 2, 0]}
           scale={1.5}
+          onFrameClick={onFrameClick}
         />
 
         {/* Captain Moses Greenleaf plan, same size/distance, facing +X (opposite) */}
@@ -231,6 +443,7 @@ export function LobbyScene({ section, mousePosition }: LobbySceneProps) {
           imageUrl="/images/greenleaf.png"
           rotation={[0, Math.PI / 2, 0]}
           scale={1.5}
+          onFrameClick={onFrameClick}
         />
 
         {/* Lobby environment model */}
@@ -243,7 +456,11 @@ export function LobbyScene({ section, mousePosition }: LobbySceneProps) {
 // Preload GLTF to avoid runtime fetch hitches
 useGLTF.preload("/models/lobby.glb")
 // Preload textures used in picture frames
+useTexture.preload(FRAME_TEXTURE_URL)
 useTexture.preload("/images/redoubt4.png")
+useTexture.preload("/images/redoubt2.jpg")
+useTexture.preload("/images/ClintonCover.png")
+useTexture.preload("/images/Fort Putnam/IMG_0065.jpeg")
 useTexture.preload("/images/ccaa-logo-square.jpg")
 useTexture.preload("/images/west point redoubts map.png")
 useTexture.preload("/images/greenleaf.png")
