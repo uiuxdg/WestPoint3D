@@ -58,14 +58,14 @@ export function LoadingScreen({ isVisible = true }: { isVisible?: boolean }) {
             message === 1 ? "opacity-100" : "opacity-0"
           }`}
         >
-          Welcome to West Point
+          Welcome to the West Point Revolutionary War Fortifications Virtual Archive
         </h2>
         <h2
           className={`text-4xl text-white transition-opacity duration-1000 ${
             message === 2 ? "opacity-100" : "opacity-0"
           }`}
         >
-          Preparing your virtual tour...
+          Preparing your guided tour...
         </h2>
       </div>
     </div>
