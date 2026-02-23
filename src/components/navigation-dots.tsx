@@ -9,12 +9,12 @@ interface NavigationDotsProps {
 
 export function NavigationDots({ total, active, onChange, labels }: NavigationDotsProps) {
   return (
-    <nav className="fixed right-8 top-1/2 z-40 -translate-y-1/2">
-      <ul className="space-y-1 md:space-y-4">
+    <nav className="fixed right-8 top-[18%] z-40 md:top-1/2 md:-translate-y-1/2">
+      <ul className="flex flex-col gap-1 md:gap-4">
         {Array.from({ length: total }).map((_, i) => (
-          <li key={i} className="group flex items-center justify-end gap-2">
+          <li key={i} className="group relative flex items-center justify-end gap-2">
             <span
-              className="pointer-events-none relative inline-flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-0"
+              className="pointer-events-none absolute right-full mr-2 hidden md:inline-flex opacity-0 group-hover:opacity-100 transition-opacity duration-0"
               aria-hidden
             >
               <span className="rounded-l-2xl border-2 border-r-0 border-white/30 bg-linear-to-br from-white/10 via-white/10 to-zinc-500/30 px-3 py-1.5 pr-4 text-[1.3125rem] font-medium text-white/90 shadow-[-30px_-30px_100px_0px_rgba(214,214,214,0.2)] whitespace-nowrap">

@@ -251,7 +251,7 @@ export default function Page() {
                       <>
                         <button
                           onClick={goToPreviousSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           ← Previous
                         </button>
@@ -261,7 +261,7 @@ export default function Page() {
                     {!isLastSection && (
                       <button
                         onClick={goToNextSection}
-                        className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
+                        className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
                       >
                         Next →
                       </button>
@@ -296,7 +296,7 @@ export default function Page() {
                       <>
                         <button
                           onClick={goToPreviousSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           ← Previous
                         </button>
@@ -306,7 +306,7 @@ export default function Page() {
                     {!isLastSection && (
                       <button
                         onClick={goToNextSection}
-                        className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
+                        className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
                       >
                         Next →
                       </button>
@@ -342,7 +342,7 @@ export default function Page() {
                       <>
                         <button
                           onClick={goToPreviousSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           ← Previous
                         </button>
@@ -351,7 +351,7 @@ export default function Page() {
                     )}
                     <button
                       onClick={() => handleEnterRedoubt("redoubt-4")}
-                      className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base bg-white/30 border-r-2 border-l-2 border-white/40 transition-colors duration-300 hover:bg-white/40 flex flex-col items-center justify-center gap-1"
+                      className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base bg-white/30 border-r-2 border-l-2 border-white/40 transition-colors duration-300 hover:bg-white/40 flex flex-col items-center justify-center gap-1"
                     >
                       <span className="text-lg md:text-2xl leading-none">↑</span>
                       <span className="text-xs md:text-base whitespace-nowrap">Enter Site</span>
@@ -361,7 +361,7 @@ export default function Page() {
                         <div className="w-px bg-white/30" />
                         <button
                           onClick={goToNextSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           Next →
                         </button>
@@ -407,7 +407,7 @@ export default function Page() {
                       <>
                         <button
                           onClick={goToPreviousSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           ← Previous
                         </button>
@@ -416,7 +416,7 @@ export default function Page() {
                     )}
                     <button
                       disabled
-                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-1.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
+                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-2.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
                     >
                       Coming Soon
                     </button>
@@ -425,7 +425,7 @@ export default function Page() {
                         <div className="w-px bg-white/30" />
                         <button
                           onClick={goToNextSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           Next →
                         </button>
@@ -471,7 +471,7 @@ export default function Page() {
                       <>
                         <button
                           onClick={goToPreviousSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           ← Previous
                         </button>
@@ -480,7 +480,7 @@ export default function Page() {
                     )}
                     <button
                       disabled
-                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-1.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
+                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-2.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
                     >
                       Coming Soon
                     </button>
@@ -489,7 +489,7 @@ export default function Page() {
                         <div className="w-px bg-white/30" />
                         <button
                           onClick={goToNextSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           Next →
                         </button>
@@ -536,7 +536,7 @@ export default function Page() {
                       <>
                         <button
                           onClick={goToPreviousSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           ← Previous
                         </button>
@@ -545,7 +545,7 @@ export default function Page() {
                     )}
                     <button
                       disabled
-                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-1.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
+                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-2.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
                     >
                       Coming Soon
                     </button>
@@ -554,7 +554,7 @@ export default function Page() {
                         <div className="w-px bg-white/30" />
                         <button
                           onClick={goToNextSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           Next →
                         </button>
@@ -600,7 +600,7 @@ export default function Page() {
                       <>
                         <button
                           onClick={goToPreviousSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           ← Previous
                         </button>
@@ -609,7 +609,7 @@ export default function Page() {
                     )}
                     <button
                       disabled
-                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-1.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
+                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-2.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
                     >
                       Coming Soon
                     </button>
@@ -618,7 +618,7 @@ export default function Page() {
                         <div className="w-px bg-white/30" />
                         <button
                           onClick={goToNextSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           Next →
                         </button>
@@ -664,7 +664,7 @@ export default function Page() {
                       <>
                         <button
                           onClick={goToPreviousSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           ← Previous
                         </button>
@@ -673,7 +673,7 @@ export default function Page() {
                     )}
                     <button
                       disabled
-                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-1.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
+                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-2.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
                     >
                       Coming Soon
                     </button>
@@ -682,7 +682,7 @@ export default function Page() {
                         <div className="w-px bg-white/30" />
                         <button
                           onClick={goToNextSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           Next →
                         </button>
@@ -729,7 +729,7 @@ export default function Page() {
                       <>
                         <button
                           onClick={goToPreviousSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           ← Previous
                         </button>
@@ -738,7 +738,7 @@ export default function Page() {
                     )}
                     <button
                       disabled
-                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-1.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
+                      className={`${isFirstSection ? 'flex-1' : 'flex-1'} cursor-not-allowed px-2 py-2.5 md:px-5 md:py-3 font-bold text-white/30 text-xs md:text-base opacity-50`}
                     >
                       Coming Soon
                     </button>
@@ -747,7 +747,7 @@ export default function Page() {
                         <div className="w-px bg-white/30" />
                         <button
                           onClick={goToNextSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           Next →
                         </button>
@@ -785,7 +785,7 @@ export default function Page() {
                       <>
                         <button
                           onClick={goToPreviousSection}
-                          className="flex-1 px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
+                          className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20"
                         >
                           ← Previous
                         </button>
@@ -795,14 +795,14 @@ export default function Page() {
                     {isLastSection ? (
                       <button
                         onClick={() => setCurrentSection(0)}
-                        className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
+                        className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
                       >
                         Back to Home
                       </button>
                     ) : (
                       <button
                         onClick={goToNextSection}
-                        className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-1.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
+                        className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 hover:bg-white/20`}
                       >
                         Next →
                       </button>
