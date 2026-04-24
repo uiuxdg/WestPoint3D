@@ -67,7 +67,7 @@ export function ImageViewerModal({ open, image, onClose }: ImageViewerModalProps
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[80] bg-black/70 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out" />
         <Dialog.Content
-          className="fixed z-[90] flex flex-col rounded-xl border border-white/10 bg-zinc-900/95 p-0 text-white shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-md data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out"
+          className="fixed z-[90] flex flex-col rounded-xl border border-white/10 bg-zinc-900/95 p-0 text-white shadow-[0_0.75vmin_2.8vmin_rgba(0,0,0,0.6)] backdrop-blur-md data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out"
           style={{ left: "5%", right: "5%", top: "5%", bottom: "5%" }}
           onPointerDown={(e) => e.stopPropagation()}
         >

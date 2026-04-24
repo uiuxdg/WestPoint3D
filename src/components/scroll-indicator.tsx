@@ -2,9 +2,9 @@
 
 export function ScrollIndicator() {
   return (
-    <div className="fixed bottom-4 left-1/2 z-30 -translate-x-1/2 animate-bounce">
+    <div className="fixed bottom-[3dvh] left-1/2 z-30 -translate-x-1/2 animate-bounce">
       <svg
-        className="h-8 w-8 text-zinc-600"
+        className="h-[4.5vmin] w-[4.5vmin] text-zinc-600"
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"

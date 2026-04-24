@@ -31,9 +31,9 @@ const sideClasses: Record<SheetSide, string> = {
   top: "inset-x-0 top-0 border-b data-[state=open]:slide-in-from-top data-[state=closed]:slide-out-to-top",
   bottom:
     "inset-x-0 bottom-0 border-t data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom",
-  left: "inset-y-0 left-0 h-full w-3/4 sm:w-80 border-r data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left",
+  left: "inset-y-0 left-0 h-full w-[75dvw] sm:w-[min(85dvw,22vw)] border-r data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left",
   right:
-    "inset-y-0 right-0 h-full w-3/4 sm:w-80 border-l data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right",
+    "inset-y-0 right-0 h-full w-[75dvw] sm:w-[min(85dvw,22vw)] border-l data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right",
 }
 
 interface SheetContentProps

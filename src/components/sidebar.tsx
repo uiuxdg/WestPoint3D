@@ -22,7 +22,7 @@ export function Sidebar({ isOpen, onClose, onBackToLobby, viewMode }: SidebarPro
 
       {/* Sidebar */}
       <nav
-        className={`fixed left-0 top-0 z-[100] h-full w-64 overflow-x-hidden border-r-2 border-white/30 bg-gradient-to-br from-white/90 via-zinc-200/90 to-white/90 pt-16 shadow-[10px_10px_200px_0px_rgba(209,209,209,0.44)] backdrop-blur-md transition-all duration-300 ${
+        className={`fixed left-0 top-0 z-[100] h-full w-[min(88dvw,28vmin)] sm:w-[22vw] overflow-x-hidden border-r-2 border-white/30 bg-gradient-to-br from-white/90 via-zinc-200/90 to-white/90 pt-16 shadow-[0.65vmin_0.65vmin_12vmin_0_rgba(209,209,209,0.44)] backdrop-blur-md transition-all duration-300 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

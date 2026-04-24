@@ -22,23 +22,23 @@ export function LoadingScreen({ isVisible = true }: { isVisible?: boolean }) {
       {/* Mesh gradient blobs */}
       <div className="absolute inset-0">
         <div
-          className="absolute top-0 left-0 w-[800px] h-[800px] rounded-full opacity-30 blur-[120px]"
+          className="absolute top-0 left-0 w-[min(95vw,52vmin)] h-[min(95vw,52vmin)] rounded-full opacity-30 blur-[10vmin]"
           style={{ background: "radial-gradient(circle, #1e293b 0%, transparent 70%)" }}
         />
         <div
-          className="absolute top-1/4 right-0 w-[600px] h-[600px] rounded-full opacity-25 blur-[100px]"
+          className="absolute top-1/4 right-0 w-[min(85vw,40vmin)] h-[min(85vw,40vmin)] rounded-full opacity-25 blur-[8.5vmin]"
           style={{ background: "radial-gradient(circle, #1e3a5f 0%, transparent 70%)" }}
         />
         <div
-          className="absolute bottom-0 left-1/3 w-[700px] h-[700px] rounded-full opacity-20 blur-[110px]"
+          className="absolute bottom-0 left-1/3 w-[min(90vw,46vmin)] h-[min(90vw,46vmin)] rounded-full opacity-20 blur-[9vmin]"
           style={{ background: "radial-gradient(circle, #0f172a 0%, transparent 70%)" }}
         />
         <div
-          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full opacity-30 blur-[90px]"
+          className="absolute bottom-1/4 right-1/4 w-[min(75vw,34vmin)] h-[min(75vw,34vmin)] rounded-full opacity-30 blur-[7.5vmin]"
           style={{ background: "radial-gradient(circle, #172554 0%, transparent 70%)" }}
         />
         <div
-          className="absolute top-1/2 left-1/2 w-[600px] h-[600px] rounded-full opacity-25 blur-[100px] -translate-x-1/2 -translate-y-1/2"
+          className="absolute top-1/2 left-1/2 w-[min(85vw,40vmin)] h-[min(85vw,40vmin)] rounded-full opacity-25 blur-[8.5vmin] -translate-x-1/2 -translate-y-1/2"
           style={{ background: "radial-gradient(circle, #1e40af 0%, transparent 70%)" }}
         />
       </div>
@@ -54,14 +54,14 @@ export function LoadingScreen({ isVisible = true }: { isVisible?: boolean }) {
 
       <div className="text-center relative z-10">
         <h2
-          className={`text-4xl text-white transition-opacity duration-1000 ${
+          className={`text-3xl md:text-4xl text-white transition-opacity duration-1000 ${
             message === 1 ? "opacity-100" : "opacity-0"
           }`}
         >
           Welcome to the West Point Revolutionary War Fortifications Virtual Archive
         </h2>
         <h2
-          className={`text-4xl text-white transition-opacity duration-1000 ${
+          className={`text-3xl md:text-4xl text-white transition-opacity duration-1000 ${
             message === 2 ? "opacity-100" : "opacity-0"
           }`}
         >

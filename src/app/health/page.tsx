@@ -1,5 +1,9 @@
 export default function Health() {
-  return <div style={{ color: "white", padding: 24 }}>health ok</div>;
+  return (
+    <div className="p-[max(3dvw,2.5vmin)] text-white">
+      health ok
+    </div>
+  )
 }
 
 

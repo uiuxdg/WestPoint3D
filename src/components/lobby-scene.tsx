@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState, useMemo } from "react"
 import { useFrame, useThree } from "@react-three/fiber"
-import { Environment, RoundedBox, Stars, useGLTF, useTexture } from "@react-three/drei"
+import { Billboard, Environment, RoundedBox, Stars, Text, useGLTF, useTexture } from "@react-three/drei"
 import * as THREE from "three"
 
 /** Configure a texture for high-resolution display on 3D frames (sharp filtering, anisotropy, correct color space). */
@@ -27,6 +27,8 @@ interface LobbySceneProps {
   section: number
   mousePosition: { x: number; y: number }
   onFrameClick?: (imageUrl: string) => void
+  /** Desktop Redoubt 4 (section 3): 3D LiDAR tour CTA — same intent as primary CSS buttons */
+  onLidarTourClick?: () => void
 }
 
 const CAMERA_POSITIONS = [
@@ -60,6 +62,79 @@ function LobbyModel() {
   // Load lobby model from public/models/lobby.glb
   const { scene } = useGLTF("/models/lobby.glb")
   return <primitive object={scene} position={[17, 0, 0]} scale={4} />
+}
+
+/** Large 3D CTA in front of the Redoubt 4 frame (desktop + section 3 only). Darker royal blue with a slight indigo/violet shift vs. flat UI blues. */
+function LiDARRTourButton3D({ visible, onClick }: { visible: boolean; onClick?: () => void }) {
+  const [hovered, setHovered] = useState(false)
+  const scaleRef = useRef(1)
+  const groupRef = useRef<THREE.Group>(null)
+
+  useFrame((_, delta) => {
+    const target = hovered ? 1.06 : 1
+    scaleRef.current += (target - scaleRef.current) * Math.min(1, delta * 12)
+    if (groupRef.current) {
+      const s = scaleRef.current
+      groupRef.current.scale.setScalar(s)
+    }
+  })
+
+  useEffect(() => {
+    if (!visible) document.body.style.cursor = "auto"
+  }, [visible])
+
+  useEffect(() => {
+    return () => {
+      document.body.style.cursor = "auto"
+    }
+  }, [])
+
+  if (!visible) return null
+
+  return (
+    <Billboard position={[-6.9, 0.65, -2.28]} follow>
+      <group ref={groupRef}>
+        <RoundedBox
+          args={[7.6, 1.22, 0.22]}
+          radius={0.14}
+          smoothness={4}
+          onPointerOver={(e) => {
+            e.stopPropagation()
+            setHovered(true)
+            document.body.style.cursor = "pointer"
+          }}
+          onPointerOut={() => {
+            setHovered(false)
+            document.body.style.cursor = "auto"
+          }}
+          onClick={(e) => {
+            e.stopPropagation()
+            onClick?.()
+          }}
+        >
+          <meshStandardMaterial
+            color={hovered ? "#2e46c6" : "#2237a3"}
+            roughness={0.55}
+            metalness={0}
+            emissive="#000000"
+            emissiveIntensity={0}
+          />
+        </RoundedBox>
+        <Text
+          position={[0, 0, 0.13]}
+          fontSize={0.3}
+          fontWeight={700}
+          maxWidth={7.15}
+          textAlign="center"
+          anchorX="center"
+          anchorY="middle"
+          color="#ffffff"
+        >
+          Take Interactive LiDAR Tour
+        </Text>
+      </group>
+    </Billboard>
+  )
 }
 
 const FRAME_TEXTURE_URL = "/images/frametexture.png"
@@ -260,9 +335,18 @@ function PictureFrame({
   )
 }
 
-export function LobbyScene({ section, mousePosition, onFrameClick }: LobbySceneProps) {
+export function LobbyScene({ section, mousePosition, onFrameClick, onLidarTourClick }: LobbySceneProps) {
   const { camera } = useThree()
   const groupRef = useRef<any>(null)
+  const [isDesktop, setIsDesktop] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)")
+    const apply = () => setIsDesktop(mq.matches)
+    apply()
+    mq.addEventListener("change", apply)
+    return () => mq.removeEventListener("change", apply)
+  }, [])
   const cameraTargetRef = useRef(new THREE.Vector3(17, 2, -100))
   const easedLookAtRef = useRef(new THREE.Vector3(17, 2, -100))
   const targetDirectionRef = useRef(new THREE.Vector3(0, 0, -1))
@@ -445,6 +529,9 @@ export function LobbyScene({ section, mousePosition, onFrameClick }: LobbySceneP
           scale={1.5}
           onFrameClick={onFrameClick}
         />
+
+        {/* Redoubt 4 (section 3): desktop 3D LiDAR CTA — in front of lower area of redoubt4 frame */}
+        <LiDARRTourButton3D visible={section === 3 && isDesktop} onClick={onLidarTourClick} />
 
         {/* Lobby environment model */}
         <LobbyModel />
