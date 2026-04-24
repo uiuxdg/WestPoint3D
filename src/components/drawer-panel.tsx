@@ -48,17 +48,43 @@ const FORT_CLINTON_IMAGES = [
 const REDOUBT4_GRID7_SHAREPOINT_URL =
   "https://commonwealthcultural.sharepoint.com/:v:/s/all/IQAGqYQT_ozeSZMiNy_itNntAVyp0o-4D_zS9OF2T1syqII?e=fGK2ZJ"
 
-function Redoubt4Grid7Video() {
-  const blobOrSasUrl = process.env.NEXT_PUBLIC_REDOUBT4_GRID7_VIDEO_URL?.trim()
+const REDOUBT4_GRID7_VIDEO_API = "/api/media/redoubt-4-grid-7-video"
 
-  if (blobOrSasUrl) {
+function Redoubt4Grid7Video() {
+  const [inlineReady, setInlineReady] = React.useState<boolean | null>(null)
+
+  React.useEffect(() => {
+    let cancelled = false
+    fetch(REDOUBT4_GRID7_VIDEO_API, { method: "HEAD" })
+      .then((res) => {
+        if (!cancelled) setInlineReady(res.status === 204)
+      })
+      .catch(() => {
+        if (!cancelled) setInlineReady(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (inlineReady === null) {
+    return (
+      <div
+        className="flex aspect-video w-full max-h-[min(60dvh,520px)] animate-pulse items-center justify-center rounded-lg border border-white/10 bg-zinc-950/60"
+        aria-busy
+        aria-label="Checking video configuration"
+      />
+    )
+  }
+
+  if (inlineReady) {
     return (
       <video
         className="max-h-[min(60dvh,520px)] w-full rounded-lg bg-black object-contain"
         controls
         playsInline
         preload="metadata"
-        src={blobOrSasUrl}
+        src={REDOUBT4_GRID7_VIDEO_API}
       >
         Your browser does not support embedded video.
       </video>
@@ -78,7 +104,8 @@ function Redoubt4Grid7Video() {
       </span>
       <span className="text-sm font-semibold">Open video on SharePoint</span>
       <span className="max-w-[95%] text-xs text-white/60">
-        Set NEXT_PUBLIC_REDOUBT4_GRID7_VIDEO_URL to your Azure Blob URL to play inline here.
+        Set REDOUBT4_GRID7_VIDEO_URL or NEXT_PUBLIC_REDOUBT4_GRID7_VIDEO_URL to your Azure blob (or SAS) URL,
+        restart dev server, then reload. Ensure blob CORS allows this site (GET, HEAD).
       </span>
     </a>
   )
@@ -312,7 +339,7 @@ export function DrawerPanel({
           <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out" />
           <Dialog.Content className="fixed inset-[2vh_2vw] z-[70] flex min-h-0 min-w-0 flex-col rounded-xl border border-white/10 bg-zinc-900/90 p-0 text-white shadow-[0_0.75vmin_2.8vmin_rgba(0,0,0,0.6)] backdrop-blur-md data-[state=open]:animate-in data-[state=open]:zoom-in-95 data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=closed]:fade-out md:inset-auto md:left-1/2 md:top-1/2 md:h-[84dvh] md:max-h-[90dvh] md:w-[90dvw] md:min-h-[84dvh] md:min-w-[min(48vw,55vmin)] md:max-w-[min(92dvw,88vmin)] md:-translate-x-1/2 md:-translate-y-1/2">
             <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-white/10 bg-zinc-900/95 px-2 py-2 backdrop-blur-md md:px-3 md:py-2.5">
-              <Dialog.Title className="text-xl font-bold uppercase tracking-wide md:text-2xl">
+              <Dialog.Title className="text-xl font-bold uppercase leading-none tracking-tight [font-family:var(--font-libre-baskerville),ui-serif,Georgia,serif] md:text-2xl">
                 {dialogTitle(openKind)}
               </Dialog.Title>
               <Dialog.Close

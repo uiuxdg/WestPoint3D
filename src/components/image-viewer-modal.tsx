@@ -72,7 +72,7 @@ export function ImageViewerModal({ open, image, onClose }: ImageViewerModalProps
           onPointerDown={(e) => e.stopPropagation()}
         >
           <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-zinc-900/95 px-4 py-3 md:px-6 md:py-4">
-            <Dialog.Title className="text-xl font-bold uppercase tracking-wide md:text-2xl">
+            <Dialog.Title className="text-xl font-bold uppercase leading-none tracking-tight [font-family:var(--font-libre-baskerville),ui-serif,Georgia,serif] md:text-2xl">
               {image?.alt ?? "Image"}
             </Dialog.Title>
             <Dialog.Close

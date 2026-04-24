@@ -13,8 +13,9 @@
   Usage:
     .\scripts\upload-redoubt4-grid7.ps1 -AccountName "mystorage" -ContainerName "mycontainer" -LocalFile "C:\path\Redoubt 4 Grid 7.mp4"
 
-  Then set in .env.local and Vercel:
-    NEXT_PUBLIC_REDOUBT4_GRID7_VIDEO_URL=https://<AccountName>.blob.core.windows.net/<ContainerName>/<BlobName>
+  Then set in .env.local and Vercel (prefer server-only; restart dev after change):
+    REDOUBT4_GRID7_VIDEO_URL=https://<AccountName>.blob.core.windows.net/<ContainerName>/<BlobName>
+  Or use NEXT_PUBLIC_REDOUBT4_GRID7_VIDEO_URL for a public blob URL (rebuild after change on Vercel).
 
   For private containers, use a long-lived SAS URL as the env value instead, or enable public read on the blob/container per your policy.
 #>
