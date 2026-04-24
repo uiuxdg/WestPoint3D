@@ -6,6 +6,19 @@ import Image from "next/image"
 
 type DrawerKind = "images" | "files" | "research" | null
 
+/** Drawer modal galleries: smaller optimized requests; full asset opens in the image viewer. */
+const MODAL_THUMB_QUALITY = 40
+const MODAL_THUMB_W = 480
+const MODAL_THUMB_H = 320
+
+const modalThumbButtonClass =
+  "group block w-full cursor-zoom-in overflow-hidden rounded-lg border border-white/10 bg-zinc-950/40 shadow-sm transition-[box-shadow,border-color,transform] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/80 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 hover:border-amber-200/60 hover:shadow-[0_0_0_1px_rgba(252,211,77,0.4),0_0_24px_rgba(251,191,36,0.38),0_0_52px_rgba(251,191,36,0.14)] active:scale-[0.99]"
+
+const modalThumbImgClassCover =
+  "h-auto w-full object-cover transition-[filter] duration-200 group-hover:brightness-[1.07]"
+const modalThumbImgClassContain =
+  "h-auto w-full object-contain transition-[filter] duration-200 group-hover:brightness-[1.05]"
+
 const FORT_PUTNAM_IMAGES = Array.from({ length: 30 }, (_, i) => {
   const num = String(57 + i).padStart(4, "0")
   return { src: `/images/Fort Putnam/IMG_${num}.jpeg`, alt: `Fort Putnam ${num}` }
@@ -31,8 +44,48 @@ const FORT_CLINTON_IMAGES = [
   alt: `Fort Clinton ${name.replace(/\.[^.]+$/, "").replace(/_/g, " ")}`,
 }))
 
-/** Redoubt 4 → Historical reports modal (PDFs + optional KMZ). `linkLabel` defaults to “View PDF”. */
-const REDOUBT4_HISTORICAL_REPORT_PDFS: { href: string; description: string; linkLabel?: string }[] = [
+/** When unset, fall back to SharePoint (opens in new tab; no iframe). */
+const REDOUBT4_GRID7_SHAREPOINT_URL =
+  "https://commonwealthcultural.sharepoint.com/:v:/s/all/IQAGqYQT_ozeSZMiNy_itNntAVyp0o-4D_zS9OF2T1syqII?e=fGK2ZJ"
+
+function Redoubt4Grid7Video() {
+  const blobOrSasUrl = process.env.NEXT_PUBLIC_REDOUBT4_GRID7_VIDEO_URL?.trim()
+
+  if (blobOrSasUrl) {
+    return (
+      <video
+        className="max-h-[min(60dvh,520px)] w-full rounded-lg bg-black object-contain"
+        controls
+        playsInline
+        preload="metadata"
+        src={blobOrSasUrl}
+      >
+        Your browser does not support embedded video.
+      </video>
+    )
+  }
+
+  return (
+    <a
+      href={REDOUBT4_GRID7_SHAREPOINT_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex aspect-video w-full max-h-[min(60dvh,520px)] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-white/15 bg-zinc-950/90 px-4 py-10 text-center text-white transition hover:bg-zinc-800/90"
+      aria-label="Open Redoubt 4 Grid 7 video on SharePoint (new tab)"
+    >
+      <span className="text-4xl leading-none opacity-90" aria-hidden>
+        ▶
+      </span>
+      <span className="text-sm font-semibold">Open video on SharePoint</span>
+      <span className="max-w-[95%] text-xs text-white/60">
+        Set NEXT_PUBLIC_REDOUBT4_GRID7_VIDEO_URL to your Azure Blob URL to play inline here.
+      </span>
+    </a>
+  )
+}
+
+/** Crozier (1974) and Mead (1968) — listed under Redoubt 4 → Historical reports and Fort Putnam → Research. */
+const CROZIER_MEAD_HISTORICAL_REPORT_PDFS: { href: string; description: string; linkLabel?: string }[] = [
   {
     href: "https://commonwealthcultural.sharepoint.com/:b:/s/all/IQDOiBlxHX0JQaTMtcFgnmhuAY-Zn1TI-_umPholafjf-Q4?e=98ej1d",
     description:
@@ -42,6 +95,11 @@ const REDOUBT4_HISTORICAL_REPORT_PDFS: { href: string; description: string; link
     href: "https://commonwealthcultural.sharepoint.com/:b:/s/all/IQCbKf5O67dsQZDI-BaM7r_uATi21SSh09mFqGyxbO55dtM?e=pX7dOd",
     description: "Mead (1968) — survey of Fort Putnam and other Revolutionary War–era fortifications (PDF).",
   },
+]
+
+/** Redoubt 4 → Historical reports modal (PDFs + optional KMZ). `linkLabel` defaults to “View PDF”. */
+const REDOUBT4_HISTORICAL_REPORT_PDFS: { href: string; description: string; linkLabel?: string }[] = [
+  ...CROZIER_MEAD_HISTORICAL_REPORT_PDFS,
   {
     href: "https://commonwealthcultural.sharepoint.com/:b:/s/all/IQBuOQ1CobMrQoyg-3PuDuI2ATzDkL2R8wS6Pan4knglGyU?e=n7OWpd",
     description: "Redoubt 4 Reconstruction Project report — Crozier, 1976–1977 (PDF).",
@@ -86,6 +144,23 @@ const REDOUBT4_HISTORICAL_REPORT_PDFS: { href: string; description: string; link
     href: "https://commonwealthcultural.sharepoint.com/:b:/s/all/IQDDEMUWUhSMTJW-gJZ9UmkkAddcmUGtxYRIZJGL9pFd85Y?e=NB4E6Q",
     description: "Gruber, August 1974 — PDF from the Commonwealth Cultural library.",
   },
+  {
+    href: "https://commonwealthcultural.sharepoint.com/:b:/s/all/IQCfUiTPjjgKRo2a6kUfFSB6AQtY959Y-aLizXCrcwdt3v4?e=Q4vl5X",
+    description: "Appendix A — GPR data table (supporting documentation, PDF).",
+  },
+  {
+    href: "https://commonwealthcultural.sharepoint.com/:b:/s/all/IQCIXJYF2dvMS62soUB9SJ1jAUNt6tLk602AOaVqzAmbd7s?e=5cWbRh",
+    description: "Appendix B — LiDAR capture and web application notes (PDF).",
+  },
+  {
+    href: "https://commonwealthcultural.sharepoint.com/:b:/s/all/IQA9oHl0Hx-UT7fNVcI2hwcAAS6F2TgRhzXbw24GPAoVRdM?e=rSSSQI",
+    description: "Appendix C — pension letter concerning Nathan Clark (primary source, PDF).",
+  },
+  {
+    href: "https://commonwealthcultural.sharepoint.com/:b:/s/all/IQDg7xXafSr0R7O8KXhO4gQ3AUBA7IUlomuOpzpgRWq2EeI?e=I8dHaB",
+    description:
+      "West Point GPR, Redoubt 4 — project record 24-PC-03917 / MA2501 (geophysical report, PDF).",
+  },
 ]
 
 export function DrawerPanel({
@@ -116,13 +191,13 @@ export function DrawerPanel({
   }
 
   const drawerButtonLabels = isRedoubt4
-    ? { images: "Images", files: "Historical reports", research: "Ground Penetrating Radar" }
+    ? { images: "Images and Videos", files: "Historical reports", research: "Ground Penetrating Radar" }
     : { images: "Images", files: "Files", research: "Research" }
 
   const dialogTitle = (kind: DrawerKind) => {
     if (!kind) return ""
     if (isRedoubt4) {
-      if (kind === "images") return "Images"
+      if (kind === "images") return "Images and Videos"
       if (kind === "files") return "Historical reports"
       return "Ground Penetrating Radar"
     }
@@ -130,6 +205,10 @@ export function DrawerPanel({
     if (kind === "files") return "Files"
     return "Research"
   }
+
+  /** Tan pill behind Redoubt 4 drawer slot labels (saddle-brown text stays readable). */
+  const redoubt4DrawerLabelSurface =
+    "tracking-tight sm:tracking-wide inline-block rounded-md bg-[#E0C9A8]/92 px-2 py-0.5 shadow-sm md:px-2.5 md:py-1"
 
   return (
     <div className="mt-4 md:mt-6 w-full">
@@ -165,11 +244,17 @@ export function DrawerPanel({
             <button
               type="button"
               onClick={() => open("images")}
-              className="pointer-events-auto group relative m-2 mb-4 flex flex-[1.1_1_0%] items-center justify-center bg-transparent"
+              className={
+                isRedoubt4
+                  ? "pointer-events-auto group relative mx-1.5 mb-1.5 mt-0 flex flex-[1.06_1_0%] items-center justify-center bg-transparent"
+                  : "pointer-events-auto group relative m-2 mb-4 flex flex-[1.1_1_0%] items-center justify-center bg-transparent"
+              }
               aria-label={`Open ${drawerButtonLabels.images}`}
             >
               <span
-                className={`-translate-y-[20%] ${drawerLabelClass} ${isRedoubt4 ? "tracking-tight sm:tracking-wide" : "tracking-wide"} text-[#8B4513] font-bold drop-shadow`}
+                className={`-translate-y-[20%] ${drawerLabelClass} ${
+                  isRedoubt4 ? redoubt4DrawerLabelSurface : "tracking-wide"
+                } text-[#8B4513] font-bold drop-shadow`}
               >
                 {drawerButtonLabels.images}
               </span>
@@ -180,11 +265,17 @@ export function DrawerPanel({
             <button
               type="button"
               onClick={() => open("files")}
-              className="pointer-events-auto group relative m-2 mb-4 flex flex-1 items-center justify-center bg-transparent"
+              className={
+                isRedoubt4
+                  ? "pointer-events-auto group relative mx-1.5 mb-1.5 mt-0 flex flex-1 items-center justify-center bg-transparent"
+                  : "pointer-events-auto group relative m-2 mb-4 flex flex-1 items-center justify-center bg-transparent"
+              }
               aria-label={`Open ${drawerButtonLabels.files}`}
             >
               <span
-                className={`-translate-y-[20%] ${drawerLabelClass} ${isRedoubt4 ? "tracking-tight sm:tracking-wide" : "tracking-wide"} text-[#8B4513] font-bold drop-shadow`}
+                className={`-translate-y-[20%] ${drawerLabelClass} ${
+                  isRedoubt4 ? redoubt4DrawerLabelSurface : "tracking-wide"
+                } text-[#8B4513] font-bold drop-shadow`}
               >
                 {drawerButtonLabels.files}
               </span>
@@ -195,11 +286,17 @@ export function DrawerPanel({
             <button
               type="button"
               onClick={() => open("research")}
-              className="pointer-events-auto group relative m-2 mb-0 flex flex-1 items-center justify-center bg-transparent"
+              className={
+                isRedoubt4
+                  ? "pointer-events-auto group relative mx-1.5 mb-0 mt-0 flex flex-1 items-center justify-center bg-transparent"
+                  : "pointer-events-auto group relative m-2 mb-0 flex flex-1 items-center justify-center bg-transparent"
+              }
               aria-label={`Open ${drawerButtonLabels.research}`}
             >
               <span
-                className={`-translate-y-[28%] ${drawerLabelClass} ${isRedoubt4 ? "tracking-tight sm:tracking-wide" : "tracking-wide"} text-[#8B4513] font-bold drop-shadow`}
+                className={`-translate-y-[28%] ${drawerLabelClass} ${
+                  isRedoubt4 ? redoubt4DrawerLabelSurface : "tracking-wide"
+                } text-[#8B4513] font-bold drop-shadow`}
               >
                 {drawerButtonLabels.research}
               </span>
@@ -213,7 +310,7 @@ export function DrawerPanel({
       <Dialog.Root open={openKind !== null} onOpenChange={(o) => (!o ? close() : null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-[70] flex h-[84dvh] max-h-[90dvh] w-[92dvw] min-w-0 max-w-[min(92dvw,42vmin)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-white/10 bg-zinc-900/90 p-0 text-white shadow-[0_0.75vmin_2.8vmin_rgba(0,0,0,0.6)] backdrop-blur-md data-[state=open]:animate-in data-[state=open]:zoom-in-95 data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=closed]:fade-out md:min-h-[84dvh] md:max-h-[90dvh] md:w-[90dvw] md:min-w-[min(48vw,55vmin)] md:max-w-[min(92dvw,88vmin)]">
+          <Dialog.Content className="fixed inset-[2vh_2vw] z-[70] flex min-h-0 min-w-0 flex-col rounded-xl border border-white/10 bg-zinc-900/90 p-0 text-white shadow-[0_0.75vmin_2.8vmin_rgba(0,0,0,0.6)] backdrop-blur-md data-[state=open]:animate-in data-[state=open]:zoom-in-95 data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=closed]:fade-out md:inset-auto md:left-1/2 md:top-1/2 md:h-[84dvh] md:max-h-[90dvh] md:w-[90dvw] md:min-h-[84dvh] md:min-w-[min(48vw,55vmin)] md:max-w-[min(92dvw,88vmin)] md:-translate-x-1/2 md:-translate-y-1/2">
             <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-white/10 bg-zinc-900/95 px-2 py-2 backdrop-blur-md md:px-3 md:py-2.5">
               <Dialog.Title className="text-xl font-bold uppercase tracking-wide md:text-2xl">
                 {dialogTitle(openKind)}
@@ -232,22 +329,43 @@ export function DrawerPanel({
                 <div className={`mx-auto space-y-3 text-white/90 text-base md:text-lg ${openKind === "images" && (variant === "site2" || variant === "site3") ? "max-w-full" : "max-w-full md:max-w-[min(96%,48rem)]"}`}>
               {openKind === "images" &&
                 (variant === "site1" ? (
-                  <div className="space-y-2">
-                    <button
-                      type="button"
-                      onClick={() => openViewer("/images/redoubt4.png", "Redoubt 4")}
-                      className="block w-full cursor-zoom-in rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50"
-                    >
-                      <Image
-                        src="/images/redoubt4.png"
-                        alt="Redoubt 4"
-                        width={1200}
-                        height={900}
-                        className="h-auto w-full rounded-lg object-contain"
-                        priority={false}
-                      />
-                    </button>
-                    <p className="text-white/70">Redoubt 4 — Site 1 image</p>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => openViewer("/images/redoubt4.png", "Redoubt 4")}
+                        className={modalThumbButtonClass}
+                      >
+                        <Image
+                          src="/images/redoubt4.png"
+                          alt="Redoubt 4"
+                          width={800}
+                          height={600}
+                          sizes="(max-width: 768px) 96vw, min(48rem, 90vw)"
+                          quality={MODAL_THUMB_QUALITY}
+                          className={modalThumbImgClassContain}
+                          priority={false}
+                        />
+                      </button>
+                      <p className="text-white/70">Redoubt 4 — Site 1 image</p>
+                    </div>
+                    <div className="space-y-2 border-t border-white/10 pt-4">
+                      <p className="text-white/70">Redoubt 4 Grid 7 — video</p>
+                      <Redoubt4Grid7Video />
+                    </div>
+                    <div className="space-y-2 border-t border-white/10 pt-4">
+                      <p className="text-white/70">Commonwealth Cultural — West Point image</p>
+                      <div className="flex justify-center">
+                        <a
+                          href="https://commonwealthcultural.sharepoint.com/:i:/s/all/IQBmuxlqDF63SbufwO5e_gQMARiDQu4E1S0PzWzdwpig0jw?e=Eqp64C"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-base text-white transition hover:bg-white/20 md:text-xl"
+                        >
+                          Commonwealth Cultural — West Point image
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 ) : variant === "site2" ? (
                   <div className="grid grid-cols-2 gap-3 md:gap-4">
@@ -256,16 +374,17 @@ export function DrawerPanel({
                         key={src}
                         type="button"
                         onClick={() => openViewer(src, alt)}
-                        className="cursor-zoom-in rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50"
+                        className={modalThumbButtonClass}
                       >
                         <Image
                           src={src}
                           alt={alt}
-                          width={600}
-                          height={400}
-                          className="h-auto w-full rounded-lg object-cover"
+                          width={MODAL_THUMB_W}
+                          height={MODAL_THUMB_H}
+                          sizes="(max-width: 768px) 46vw, min(320px, 24vw)"
+                          quality={MODAL_THUMB_QUALITY}
+                          className={modalThumbImgClassCover}
                           priority={false}
-                          unoptimized
                         />
                       </button>
                     ))}
@@ -277,16 +396,17 @@ export function DrawerPanel({
                         key={src}
                         type="button"
                         onClick={() => openViewer(src, alt)}
-                        className="cursor-zoom-in rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50"
+                        className={modalThumbButtonClass}
                       >
                         <Image
                           src={src}
                           alt={alt}
-                          width={600}
-                          height={400}
-                          className="h-auto w-full rounded-lg object-cover"
+                          width={MODAL_THUMB_W}
+                          height={MODAL_THUMB_H}
+                          sizes="(max-width: 768px) 46vw, min(320px, 24vw)"
+                          quality={MODAL_THUMB_QUALITY}
+                          className={modalThumbImgClassCover}
                           priority={false}
-                          unoptimized
                         />
                       </button>
                     ))}
@@ -297,7 +417,7 @@ export function DrawerPanel({
               {openKind === "files" &&
                 (variant === "site1" ? (
                   <div className="space-y-4">
-                    <p>Redoubt 4 general vicinity 3D terrain model:</p>
+                    <p>Redoubt 4 general vicinity 3D terrain model (2017):</p>
                     <div className="flex justify-center">
                       <a
                         href="https://dhc.westpoint.edu/3dmodelpage/redoubt-4/"
@@ -315,7 +435,18 @@ export function DrawerPanel({
                         rel="noopener noreferrer"
                         className="inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-xl text-white transition hover:bg-white/20"
                       >
-                        Redoubt 4 2017 Magnetometry Data
+                        Redoubt 4 2017 GPR and Magnetometry Data
+                      </a>
+                    </div>
+                    <p>West Point: The Gibraltar of the Hudson (American Battlefield Trust):</p>
+                    <div className="flex justify-center">
+                      <a
+                        href="https://www.battlefields.org/learn/articles/west-point"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-xl text-white transition hover:bg-white/20"
+                      >
+                        Read article
                       </a>
                     </div>
                     <div className="space-y-4 border-t border-white/10 pt-4">
@@ -342,70 +473,25 @@ export function DrawerPanel({
                 ))}
               {openKind === "research" &&
                 (variant === "site1" ? (
+                  <div className="space-y-4" />
+                ) : variant === "site3" ? (
                   <div className="space-y-4">
-                    <p>Learn more on Redoubt Four (West Point).</p>
-                    <div className="flex justify-center">
-                      <a
-                        href="https://en.wikipedia.org/wiki/Redoubt_Four_(West_Point)"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-xl text-white transition hover:bg-white/20"
-                      >
-                        Redoubt Four (West Point)
-                      </a>
-                    </div>
-                    <p>Redoubt 4 Reconstruction Project Report — Crozier (1976–1977):</p>
-                    <div className="flex justify-center">
-                      <a
-                        href="https://commonwealthcultural.sharepoint.com/:b:/s/all/IQA49_Cru3zDQ5U9tLdVmwFXAVK_Ff_42Ijs7pSqStQTgJo?e=xZNAyZ"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-xl text-white transition hover:bg-white/20"
-                      >
-                        View report
-                      </a>
-                    </div>
-                    <p>The West Point Landscape — Jon C. Malinowski, PhD. (2024):</p>
-                    <div className="flex justify-center">
-                      <a
-                        href="https://commonwealthcultural.sharepoint.com/:b:/s/all/IQAehrcTxlhCRLAHyQ64kN_1AeVnZGS0L0iQ1mreoUPWts0?e=IwhIYd"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-xl text-white transition hover:bg-white/20"
-                      >
-                        View PDF
-                      </a>
-                    </div>
-                    <div className="flex justify-center">
-                      <a
-                        href="https://commonwealthcultural.sharepoint.com/:i:/s/all/IQBmuxlqDF63SbufwO5e_gQMARiDQu4E1S0PzWzdwpig0jw?e=Eqp64C"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-xl text-white transition hover:bg-white/20"
-                      >
-                        Commonwealth Cultural — West Point image
-                      </a>
-                    </div>
-                    <div className="flex justify-center">
-                      <a
-                        href="https://www.shopthepoint.com/product/wall-art-west-point-1778-1780-historical-map-18-5-x17-/5447"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-xl text-white transition hover:bg-white/20"
-                      >
-                        West Point 1778–1780 Historical Map (Shop the Point)
-                      </a>
-                    </div>
-                    <div className="flex justify-center">
-                      <a
-                        href="https://www.battlefields.org/learn/articles/west-point"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-xl text-white transition hover:bg-white/20"
-                      >
-                        West Point: The Gibraltar of the Hudson (American Battlefield Trust)
-                      </a>
-                    </div>
+                    <p className="text-white/90">Historical reports (PDF):</p>
+                    {CROZIER_MEAD_HISTORICAL_REPORT_PDFS.map(({ href, description, linkLabel }) => (
+                      <div key={href} className="space-y-2">
+                        <p className="text-sm leading-snug text-white/80 md:text-base">{description}</p>
+                        <div className="flex justify-center">
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-base text-white transition hover:bg-white/20 md:text-xl"
+                          >
+                            {linkLabel ?? "View PDF"}
+                          </a>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <p>Placeholder for research content. Add your articles or notes here.</p>

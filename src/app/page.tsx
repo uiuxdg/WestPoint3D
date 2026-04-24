@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
 import { Canvas } from "@react-three/fiber"
 import { LobbyScene } from "@/components/lobby-scene"
 import { RedoubtScene } from "@/components/redoubt-scene"
 import { LoadingScreen } from "@/components/loading-screen"
 import { NavigationDots } from "@/components/navigation-dots"
 import type { ViewMode } from "@/types/view-mode"
+import { buildNavigationQuery, parseNavigationFromSearch } from "@/lib/navigation-url"
 import { DrawerPanel } from "@/components/drawer-panel"
 import { ImageViewerModal } from "@/components/image-viewer-modal"
 import type { ImageViewerImage } from "@/components/image-viewer-modal"
@@ -15,8 +17,38 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 export default function Page() {
   const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+  const pathname = usePathname()
   const [viewMode, setViewMode] = useState<ViewMode>("lobby")
   const [currentSection, setCurrentSection] = useState(0)
+
+  const applyNavigationFromSearch = useCallback((search: string) => {
+    const parsed = parseNavigationFromSearch(new URLSearchParams(search))
+    setViewMode(parsed.viewMode)
+    setCurrentSection(parsed.section)
+  }, [])
+
+  useLayoutEffect(() => {
+    applyNavigationFromSearch(window.location.search)
+  }, [applyNavigationFromSearch])
+
+  useEffect(() => {
+    const onPopState = () => applyNavigationFromSearch(window.location.search)
+    window.addEventListener("popstate", onPopState)
+    return () => window.removeEventListener("popstate", onPopState)
+  }, [applyNavigationFromSearch])
+
+  const navigateTo = useCallback(
+    (view: ViewMode, section: number) => {
+      const q = buildNavigationQuery(view, section)
+      const base = pathname || "/"
+      setViewMode(view)
+      setCurrentSection(section)
+      router.push(`${base}?${q}`, { scroll: false })
+    },
+    [pathname, router],
+  )
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isGPRActive, setIsGPRActive] = useState(false)
@@ -58,9 +90,8 @@ export default function Page() {
   }
 
   const handleBackToLobby = () => {
-    setViewMode("lobby")
-    setCurrentSection(0)
     setIsGPRActive(false)
+    navigateTo("lobby", 0)
   }
 
   const handleToggleGPR = () => {
@@ -71,10 +102,12 @@ export default function Page() {
   const isLastSection = currentSection >= maxSections - 1
   const isFirstSection = currentSection === 0
   const goToNextSection = () => {
-    setCurrentSection((prev) => (prev < maxSections - 1 ? prev + 1 : prev))
+    if (currentSection >= maxSections - 1) return
+    navigateTo(viewMode, currentSection + 1)
   }
   const goToPreviousSection = () => {
-    setCurrentSection((prev) => (prev > 0 ? prev - 1 : prev))
+    if (currentSection <= 0) return
+    navigateTo(viewMode, currentSection - 1)
   }
 
   const lobbySectionLabels = [
@@ -222,7 +255,7 @@ export default function Page() {
                   Step into history. Explore Revolutionary War fortifications.
                 </p>
                 <button
-                  onClick={() => setCurrentSection(1)}
+                  onClick={() => navigateTo("lobby", 1)}
                   className="w-full md:w-auto rounded-3xl border-2 border-blue-400/50 bg-blue-600 px-3 py-2 md:px-5 md:py-3 text-base md:text-xl font-bold text-white shadow-[0_0.5vmin_2vmin_0_rgba(37,99,235,0.45)] backdrop-blur-md transition-transform duration-300 hover:scale-105 hover:bg-blue-500"
                 >
                   Begin Journey
@@ -790,7 +823,7 @@ export default function Page() {
                     )}
                     {isLastSection ? (
                       <button
-                        onClick={() => setCurrentSection(0)}
+                        onClick={() => navigateTo("lobby", 0)}
                         className={`${isFirstSection ? 'w-full' : 'flex-1'} px-2 py-2.5 md:px-5 md:py-3 font-bold text-white text-xs md:text-base whitespace-nowrap transition-colors duration-300 bg-blue-600 hover:bg-blue-500`}
                       >
                         Back to Home
@@ -1030,7 +1063,12 @@ export default function Page() {
         )}
       </div>
 
-      <NavigationDots total={viewMode === "lobby" ? 11 : 4} active={currentSection} onChange={setCurrentSection} labels={navigationLabels} />
+      <NavigationDots
+        total={viewMode === "lobby" ? 11 : 4}
+        active={currentSection}
+        onChange={(i) => navigateTo(viewMode, i)}
+        labels={navigationLabels}
+      />
       <LoadingScreen isVisible={isLoading} />
     </div>
   )

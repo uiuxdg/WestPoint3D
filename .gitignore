@@ -35,4 +35,7 @@ lerna-debug.log*
 # Misc
 *.log
 
+# Large local media (use blob URL / SharePoint; do not commit)
+public/videos/*.mp4
+
 
