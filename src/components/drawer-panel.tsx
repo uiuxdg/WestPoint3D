@@ -24,14 +24,126 @@ const FORT_PUTNAM_IMAGES = Array.from({ length: 30 }, (_, i) => {
   return { src: `/images/Fort Putnam/IMG_${num}.jpeg`, alt: `Fort Putnam ${num}` }
 })
 
+/** Sorted filenames under public/images/Fort Clinton (IMG_0071 excluded from the gallery). */
 const FORT_CLINTON_IMAGES = [
-  "IMG_0071.jpeg",
+  "IMG_0046.jpeg",
+  "IMG_0055.jpeg",
   "IMG_0075.jpeg",
+  "IMG_0090.jpeg",
+  "IMG_0091.jpeg",
+  "IMG_0092.jpeg",
+  "IMG_0093.jpeg",
+  "IMG_0094.jpeg",
+  "IMG_0095.jpeg",
+  "IMG_0096.jpeg",
+  "IMG_0623.JPG",
+  "IMG_0624.JPG",
+  "IMG_0625.JPG",
+  "IMG_0626.JPG",
+  "IMG_0627.JPG",
+  "IMG_0628.JPG",
+  "IMG_0629.JPG",
+  "IMG_0630.JPG",
+  "IMG_0631.JPG",
+  "IMG_0632.JPG",
+  "IMG_0633.JPG",
+  "IMG_0634.JPG",
+  "IMG_0635.JPG",
+  "IMG_0636.JPG",
   "IMG_0637.JPG",
+  "IMG_0638.JPG",
+  "IMG_0639.JPG",
+  "IMG_0640.JPG",
+  "IMG_0641.JPG",
+  "IMG_0642.JPG",
+  "IMG_0643.JPG",
+  "IMG_0644.JPG",
+  "IMG_0645.JPG",
+  "IMG_0646.JPG",
+  "IMG_0647.JPG",
+  "IMG_0648.JPG",
+  "IMG_0649.JPG",
+  "IMG_0650.JPG",
+  "IMG_0651.JPG",
+  "IMG_0652.JPG",
+  "IMG_0653.JPG",
+  "IMG_0654.JPG",
+  "IMG_0656.JPG",
+  "IMG_0657.JPG",
+  "IMG_0658.JPG",
+  "IMG_0659.JPG",
+  "IMG_0660.JPG",
+  "IMG_0661.JPG",
+  "IMG_0662.JPG",
+  "IMG_0663.JPG",
+  "IMG_0664.JPG",
+  "IMG_0665.JPG",
+  "IMG_0667.JPG",
+  "IMG_0669.JPG",
+  "IMG_0672.JPG",
+  "IMG_0673.JPG",
+  "IMG_0674.JPG",
+  "IMG_0675.JPG",
+  "IMG_0676.JPG",
+  "IMG_0677.JPG",
+  "IMG_0678.JPG",
+  "IMG_0679.JPG",
+  "IMG_0680.JPG",
+  "IMG_0681.JPG",
+  "IMG_0682.JPG",
+  "IMG_0683.JPG",
+  "IMG_0684.JPG",
+  "IMG_0685.JPG",
+  "IMG_0686.JPG",
+  "IMG_0687.JPG",
+  "IMG_0688.JPG",
+  "IMG_0689.JPG",
+  "IMG_0690.JPG",
+  "IMG_0691.JPG",
+  "IMG_0692.JPG",
+  "IMG_0693.JPG",
+  "IMG_0694.JPG",
+  "IMG_0695.JPG",
+  "IMG_0696.JPG",
+  "IMG_0697.JPG",
+  "IMG_0698.JPG",
+  "IMG_0699.JPG",
+  "IMG_0700.JPG",
+  "IMG_0701.JPG",
+  "IMG_0702.JPG",
+  "IMG_0703.JPG",
+  "IMG_0704.JPG",
+  "IMG_0711.JPG",
+  "IMG_0719.JPG",
+  "IMG_0725.JPG",
+  "IMG_0726.JPG",
+  "IMG_0727.JPG",
+  "IMG_0728.JPG",
+  "IMG_0729.JPG",
+  "IMG_0730.JPG",
+  "IMG_0731.JPG",
+  "IMG_0735.JPG",
+  "IMG_0736.JPG",
+  "IMG_0737.JPG",
+  "IMG_0739.JPG",
+  "IMG_0740.JPG",
   "IMG_0741.JPG",
   "IMG_0742.JPG",
   "IMG_0743.JPG",
+  "IMG_0744.JPG",
+  "IMG_0745.JPG",
+  "IMG_0746.JPG",
+  "IMG_0747.JPG",
   "IMG_0748.JPG",
+  "IMG_0750.JPG",
+  "IMG_0751.JPG",
+  "IMG_0752.JPG",
+  "IMG_0759.JPG",
+  "IMG_0765.JPG",
+  "IMG_0773.JPG",
+  "IMG_0774.JPG",
+  "IMG_0775.JPG",
+  "IMG_0776.JPG",
   "PXL_20241021_192637242.jpg",
   "PXL_20241021_192658608.jpg",
   "PXL_20241021_194044467.jpg",
@@ -39,6 +151,9 @@ const FORT_CLINTON_IMAGES = [
   "PXL_20241021_203801473.jpg",
   "PXL_20241021_203928417.jpg",
   "PXL_20241021_212210844.jpg",
+  "PXL_20241028_224757875.jpg",
+  "PXL_20241028_224808254.jpg",
+  "PXL_20241028_224823429.jpg",
 ].map((name) => ({
   src: `/images/Fort Clinton/${name}`,
   alt: `Fort Clinton ${name.replace(/\.[^.]+$/, "").replace(/_/g, " ")}`,
@@ -49,13 +164,23 @@ const REDOUBT4_GRID7_SHAREPOINT_URL =
   "https://commonwealthcultural.sharepoint.com/:v:/s/all/IQAGqYQT_ozeSZMiNy_itNntAVyp0o-4D_zS9OF2T1syqII?e=fGK2ZJ"
 
 const REDOUBT4_GRID7_VIDEO_API = "/api/media/redoubt-4-grid-7-video"
+const FORT_CLINTON_GPR_VIDEO_API = "/api/media/fort-clinton-gpr-video"
 
-function Redoubt4Grid7Video() {
+/** Redoubt 4 GPR data — SharePoint folder (Ground Penetrating Radar drawer). */
+const REDOUBT4_GPR_DATA_SHAREPOINT_URL =
+  "https://commonwealthcultural.sharepoint.com/:f:/s/all/IgA9_RJAMJFxRJ3J4vTYaB3NAZj1_f5vCEJA_BEWBvUW_BM?e=0PXvuY"
+
+const blobVideoBoxClass =
+  "flex aspect-video w-full max-h-[min(60dvh,520px)] animate-pulse items-center justify-center rounded-lg border border-white/10 bg-zinc-950/60"
+
+const blobVideoPlayerClass = "max-h-[min(60dvh,520px)] w-full rounded-lg bg-black object-contain"
+
+function BlobInlineVideo({ apiPath, fallback }: { apiPath: string; fallback: React.ReactNode }) {
   const [inlineReady, setInlineReady] = React.useState<boolean | null>(null)
 
   React.useEffect(() => {
     let cancelled = false
-    fetch(REDOUBT4_GRID7_VIDEO_API, { method: "HEAD" })
+    fetch(apiPath, { method: "HEAD" })
       .then((res) => {
         if (!cancelled) setInlineReady(res.status === 204)
       })
@@ -65,49 +190,65 @@ function Redoubt4Grid7Video() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [apiPath])
 
   if (inlineReady === null) {
     return (
-      <div
-        className="flex aspect-video w-full max-h-[min(60dvh,520px)] animate-pulse items-center justify-center rounded-lg border border-white/10 bg-zinc-950/60"
-        aria-busy
-        aria-label="Checking video configuration"
-      />
+      <div className={blobVideoBoxClass} aria-busy aria-label="Checking video configuration" />
     )
   }
 
   if (inlineReady) {
     return (
-      <video
-        className="max-h-[min(60dvh,520px)] w-full rounded-lg bg-black object-contain"
-        controls
-        playsInline
-        preload="metadata"
-        src={REDOUBT4_GRID7_VIDEO_API}
-      >
+      <video className={blobVideoPlayerClass} controls playsInline preload="metadata" src={apiPath}>
         Your browser does not support embedded video.
       </video>
     )
   }
 
+  return <>{fallback}</>
+}
+
+function Redoubt4Grid7Video() {
   return (
-    <a
-      href={REDOUBT4_GRID7_SHAREPOINT_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex aspect-video w-full max-h-[min(60dvh,520px)] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-white/15 bg-zinc-950/90 px-4 py-10 text-center text-white transition hover:bg-zinc-800/90"
-      aria-label="Open Redoubt 4 Grid 7 video on SharePoint (new tab)"
-    >
-      <span className="text-4xl leading-none opacity-90" aria-hidden>
-        ▶
-      </span>
-      <span className="text-sm font-semibold">Open video on SharePoint</span>
-      <span className="max-w-[95%] text-xs text-white/60">
-        Set REDOUBT4_GRID7_VIDEO_URL or NEXT_PUBLIC_REDOUBT4_GRID7_VIDEO_URL to your Azure blob (or SAS) URL,
-        restart dev server, then reload. Ensure blob CORS allows this site (GET, HEAD).
-      </span>
-    </a>
+    <BlobInlineVideo
+      apiPath={REDOUBT4_GRID7_VIDEO_API}
+      fallback={
+        <a
+          href={REDOUBT4_GRID7_SHAREPOINT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex aspect-video w-full max-h-[min(60dvh,520px)] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-white/15 bg-zinc-950/90 px-4 py-10 text-center text-white transition hover:bg-zinc-800/90"
+          aria-label="Open Redoubt 4 Grid 7 video on SharePoint (new tab)"
+        >
+          <span className="text-4xl leading-none opacity-90" aria-hidden>
+            ▶
+          </span>
+          <span className="text-sm font-semibold">Open video on SharePoint</span>
+          <span className="max-w-[95%] text-xs text-white/60">
+            Set REDOUBT4_GRID7_VIDEO_URL or NEXT_PUBLIC_REDOUBT4_GRID7_VIDEO_URL to your Azure blob (or SAS) URL,
+            restart dev server, then reload. Ensure blob CORS allows this site (GET, HEAD).
+          </span>
+        </a>
+      }
+    />
+  )
+}
+
+function FortClintonGprVideo() {
+  return (
+    <BlobInlineVideo
+      apiPath={FORT_CLINTON_GPR_VIDEO_API}
+      fallback={
+        <div className="flex aspect-video w-full max-h-[min(60dvh,520px)] flex-col items-center justify-center gap-2 rounded-lg border border-white/15 bg-zinc-950/90 px-4 py-10 text-center text-white">
+          <span className="text-sm font-semibold">Fort Clinton GPR video</span>
+          <span className="max-w-[95%] text-xs text-white/60">
+            Run scripts/upload-fort-clinton-gpr.ps1, then set FORT_CLINTON_GPR_VIDEO_URL or NEXT_PUBLIC_FORT_CLINTON_GPR_VIDEO_URL
+            to the blob or SAS URL. Restart the dev server and reload. Blob CORS must allow this origin (GET, HEAD).
+          </span>
+        </div>
+      }
+    />
   )
 }
 
@@ -201,6 +342,7 @@ export function DrawerPanel({
   compact?: boolean
 }) {
   const isRedoubt4 = variant === "site1"
+  const isFortClinton = variant === "site2"
   const labelClass = compact
     ? "text-[max(2.55vw,2.05vmin)] md:text-xs"
     : "text-base md:text-lg"
@@ -219,7 +361,9 @@ export function DrawerPanel({
 
   const drawerButtonLabels = isRedoubt4
     ? { images: "Images and Videos", files: "Historical reports", research: "Ground Penetrating Radar" }
-    : { images: "Images", files: "Files", research: "Research" }
+    : isFortClinton
+      ? { images: "Images and video", files: "Files", research: "Research" }
+      : { images: "Images", files: "Files", research: "Research" }
 
   const dialogTitle = (kind: DrawerKind) => {
     if (!kind) return ""
@@ -228,6 +372,7 @@ export function DrawerPanel({
       if (kind === "files") return "Historical reports"
       return "Ground Penetrating Radar"
     }
+    if (kind === "images" && isFortClinton) return "Images and video"
     if (kind === "images") return "Images"
     if (kind === "files") return "Files"
     return "Research"
@@ -395,26 +540,32 @@ export function DrawerPanel({
                     </div>
                   </div>
                 ) : variant === "site2" ? (
-                  <div className="grid grid-cols-2 gap-3 md:gap-4">
-                    {FORT_CLINTON_IMAGES.map(({ src, alt }) => (
-                      <button
-                        key={src}
-                        type="button"
-                        onClick={() => openViewer(src, alt)}
-                        className={modalThumbButtonClass}
-                      >
-                        <Image
-                          src={src}
-                          alt={alt}
-                          width={MODAL_THUMB_W}
-                          height={MODAL_THUMB_H}
-                          sizes="(max-width: 768px) 46vw, min(320px, 24vw)"
-                          quality={MODAL_THUMB_QUALITY}
-                          className={modalThumbImgClassCover}
-                          priority={false}
-                        />
-                      </button>
-                    ))}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3 md:gap-4">
+                      {FORT_CLINTON_IMAGES.map(({ src, alt }) => (
+                        <button
+                          key={src}
+                          type="button"
+                          onClick={() => openViewer(src, alt)}
+                          className={modalThumbButtonClass}
+                        >
+                          <Image
+                            src={src}
+                            alt={alt}
+                            width={MODAL_THUMB_W}
+                            height={MODAL_THUMB_H}
+                            sizes="(max-width: 768px) 46vw, min(320px, 24vw)"
+                            quality={MODAL_THUMB_QUALITY}
+                            className={modalThumbImgClassCover}
+                            priority={false}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <div className="space-y-2 border-t border-white/10 pt-4">
+                      <p className="text-white/70">Fort Clinton — GPR overview (video)</p>
+                      <FortClintonGprVideo />
+                    </div>
                   </div>
                 ) : variant === "site3" ? (
                   <div className="grid grid-cols-2 gap-3 md:gap-4">
@@ -500,7 +651,19 @@ export function DrawerPanel({
                 ))}
               {openKind === "research" &&
                 (variant === "site1" ? (
-                  <div className="space-y-4" />
+                  <div className="space-y-4">
+                    <p className="text-white/90">Redoubt 4 GPR data and related materials (SharePoint folder):</p>
+                    <div className="flex justify-center">
+                      <a
+                        href={REDOUBT4_GPR_DATA_SHAREPOINT_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-base text-white transition hover:bg-white/20 md:text-xl"
+                      >
+                        Open GPR data on SharePoint
+                      </a>
+                    </div>
+                  </div>
                 ) : variant === "site3" ? (
                   <div className="space-y-4">
                     <p className="text-white/90">Historical reports (PDF):</p>
