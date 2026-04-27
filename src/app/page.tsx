@@ -86,7 +86,7 @@ export default function Page() {
   }, [])
 
   const openRedoubt4Site = () => {
-    window.open("https://redoubt4.vercel.app", "_blank", "noopener,noreferrer")
+    window.open("https://redoubtfour.commonwealthcultural.com", "_blank", "noopener,noreferrer")
   }
 
   const handleBackToLobby = () => {
