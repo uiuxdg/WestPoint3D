@@ -37,3 +37,4 @@ export function GET() {
   if (!url) return new NextResponse(null, { status: 404 })
   return NextResponse.redirect(url, 307)
 }
+

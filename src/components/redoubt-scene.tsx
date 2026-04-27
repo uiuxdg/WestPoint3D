@@ -69,7 +69,7 @@ export function RedoubtScene({ type, section, mousePosition, isGPRActive }: Redo
 
     const positions = CAMERA_POSITIONS[type] || CAMERA_POSITIONS["redoubt-4"]
     const cameraSetting = positions[section] || positions[0]
-    const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false
+    const isMobile = typeof window !== "undefined" ? window.innerWidth <= 1024 : false
     const newPosition = isMobile
       ? getAdjustedPosition(cameraSetting.position, cameraSetting.lookAt, 2)
       : cameraSetting.position

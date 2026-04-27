@@ -341,7 +341,8 @@ export function LobbyScene({ section, mousePosition, onFrameClick, onLidarTourCl
   const [isDesktop, setIsDesktop] = useState(false)
 
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)")
+    // Keep tablets (esp. portrait) on "mobile" layout logic.
+    const mq = window.matchMedia("(min-width: 1280px)")
     const apply = () => setIsDesktop(mq.matches)
     apply()
     mq.addEventListener("change", apply)
@@ -358,7 +359,7 @@ export function LobbyScene({ section, mousePosition, onFrameClick, onLidarTourCl
 
   useEffect(() => {
     const cameraSetting = CAMERA_POSITIONS[section] || CAMERA_POSITIONS[0]
-    const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false
+    const isMobile = typeof window !== "undefined" ? window.innerWidth <= 1024 : false
     const newPosition = isMobile
       ? getAdjustedPosition(cameraSetting.position, cameraSetting.lookAt, 2)
       : cameraSetting.position

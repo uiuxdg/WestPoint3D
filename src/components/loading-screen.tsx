@@ -14,7 +14,7 @@ export function LoadingScreen({ isVisible = true }: { isVisible?: boolean }) {
 
   return (
     <div
-      className={`fixed inset-0 z-[1000] flex items-center justify-center bg-slate-950 overflow-hidden transition-opacity duration-700 ${
+      className={`fixed inset-0 z-1000 flex items-center justify-center bg-slate-950 overflow-hidden transition-opacity duration-700 ${
         isVisible ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
       aria-hidden={!isVisible}
@@ -52,21 +52,24 @@ export function LoadingScreen({ isVisible = true }: { isVisible?: boolean }) {
         }}
       />
 
-      <div className="text-center relative z-10">
-        <h2
-          className={`text-3xl md:text-4xl text-white transition-opacity duration-1000 ${
-            message === 1 ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          Welcome to the West Point Revolutionary War Fortifications Virtual Archive
-        </h2>
-        <h2
-          className={`text-3xl md:text-4xl text-white transition-opacity duration-1000 ${
-            message === 2 ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          Preparing your guided tour...
-        </h2>
+      <div className="relative z-10 w-[min(92dvw,60rem)] text-center">
+        {/* Fixed-height stage so messages crossfade in-place (no vertical stacking/jump). */}
+        <div className="relative min-h-[3.5em]">
+          <h2
+            className={`absolute inset-0 flex items-center justify-center text-3xl md:text-4xl text-white transition-[opacity,filter,transform] duration-1000 ${
+              message === 1 ? "opacity-100 blur-0 translate-y-0" : "opacity-0 blur-sm -translate-y-[0.5vmin]"
+            }`}
+          >
+            Welcome to the West Point Revolutionary War Fortifications Virtual Archive
+          </h2>
+          <h2
+            className={`absolute inset-0 flex items-center justify-center text-3xl md:text-4xl text-white transition-[opacity,filter,transform] duration-1000 ${
+              message === 2 ? "opacity-100 blur-0 translate-y-0" : "opacity-0 blur-sm translate-y-[0.5vmin]"
+            }`}
+          >
+            Preparing your guided tour...
+          </h2>
+        </div>
       </div>
     </div>
   )

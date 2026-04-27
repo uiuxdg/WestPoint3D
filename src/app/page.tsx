@@ -794,7 +794,7 @@ export default function Page() {
 
             {/* Section 8: About */}
             <section className="relative flex h-screen items-end md:items-start justify-start pl-0 pr-4 md:pr-16 pt-4 pb-0 md:pt-[12vh] md:pb-0">
-              <Card className="pointer-events-auto w-full max-w-[min(92dvw,52vmin)] md:max-w-none md:w-[min(32dvw,42vw)] rounded-l-none rounded-tr-[2.6vmin] rounded-br-none md:rounded-r-[2.6vmin] border-2 border-l-0 border-b-0 md:border-b-2 border-white/20 h-auto flex flex-col md:flex-initial backdrop-blur-md bg-linear-to-br from-zinc-900/85 via-zinc-800/78 to-zinc-950/90 shadow-[0_1.2vmin_4vmin_0_rgba(0,0,0,0.42)]">
+              <Card className="pointer-events-auto w-full md:max-w-none md:w-[min(32dvw,42vw)] rounded-l-none rounded-tr-[2.6vmin] rounded-br-none md:rounded-r-[2.6vmin] border-2 border-l-0 border-b-0 md:border-b-2 border-white/20 h-auto flex flex-col md:flex-initial backdrop-blur-md bg-linear-to-br from-zinc-900/85 via-zinc-800/78 to-zinc-950/90 shadow-[0_1.2vmin_4vmin_0_rgba(0,0,0,0.42)]">
                 <CardHeader className="pl-3 md:pl-6">
                   <CardTitle className="mb-2 text-3xl md:text-5xl font-bold uppercase text-white">Cultural Heritage</CardTitle>
                 </CardHeader>

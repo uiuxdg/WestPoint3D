@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Tailwind v4: explicitly constrain which files are scanned for class candidates. */
+@config "../tailwind.config.ts";
+@source "../src/**/*.{ts,tsx,mdx}";
+@source "./**/*.{ts,tsx,mdx}";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {

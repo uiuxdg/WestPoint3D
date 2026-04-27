@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Tailwind v4: explicitly constrain which files are scanned for class candidates. */
+@config "../../tailwind.config.ts";
+@source "../**/*.{ts,tsx,mdx}";
+
 html,
 body {
   height: 100%;

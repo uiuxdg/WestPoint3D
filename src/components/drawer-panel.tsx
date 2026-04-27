@@ -3,6 +3,7 @@
 import * as React from "react"
 import * as Dialog from "@radix-ui/react-dialog"
 import Image from "next/image"
+import { PanoramaViewerModal, type PanoramaImage } from "@/components/panorama-viewer-modal"
 
 type DrawerKind = "images" | "files" | "research" | null
 
@@ -23,6 +24,23 @@ const FORT_PUTNAM_IMAGES = Array.from({ length: 30 }, (_, i) => {
   const num = String(57 + i).padStart(4, "0")
   return { src: `/images/Fort Putnam/IMG_${num}.jpeg`, alt: `Fort Putnam ${num}` }
 })
+
+const REDOUBT4_PANORAMIC_FILENAMES = [
+  "Redoubt 4 Day 1- Setup 008.jpg",
+  "Redoubt 4 Day 1- Setup 009.jpg",
+  "Redoubt 4 Day 1- Setup 012.jpg",
+  "Redoubt 4 Day 1- Setup 016.jpg",
+  "Redoubt 4 Day 1- Setup 043.jpg",
+  "Redoubt 4 Day 1- Setup 044.jpg",
+  "Redoubt 4 Day 1- Setup 054.jpg",
+  "Redoubt 4 Day 1- Setup 056.jpg",
+  "Redoubt 4 Day 1- Setup 060.jpg",
+]
+
+const REDOUBT4_PANORAMAS: PanoramaImage[] = REDOUBT4_PANORAMIC_FILENAMES.map((name) => ({
+  src: encodeURI(`/images/Redoubt 4/Panoramic/${name}`),
+  alt: `Redoubt 4 panorama — ${name.replace(/\.[^.]+$/, "")}`,
+}))
 
 /** Sorted filenames under public/images/Fort Clinton (IMG_0071 excluded from the gallery). */
 const FORT_CLINTON_IMAGES = [
@@ -214,22 +232,14 @@ function Redoubt4Grid7Video() {
     <BlobInlineVideo
       apiPath={REDOUBT4_GRID7_VIDEO_API}
       fallback={
-        <a
-          href={REDOUBT4_GRID7_SHAREPOINT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex aspect-video w-full max-h-[min(60dvh,520px)] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-white/15 bg-zinc-950/90 px-4 py-10 text-center text-white transition hover:bg-zinc-800/90"
-          aria-label="Open Redoubt 4 Grid 7 video on SharePoint (new tab)"
-        >
-          <span className="text-4xl leading-none opacity-90" aria-hidden>
-            ▶
-          </span>
-          <span className="text-sm font-semibold">Open video on SharePoint</span>
+        <div className="flex aspect-video w-full max-h-[min(60dvh,520px)] flex-col items-center justify-center gap-2 rounded-lg border border-white/15 bg-zinc-950/90 px-4 py-10 text-center text-white">
+          <span className="text-sm font-semibold">Redoubt 4 Grid 7 — video</span>
           <span className="max-w-[95%] text-xs text-white/60">
-            Set REDOUBT4_GRID7_VIDEO_URL or NEXT_PUBLIC_REDOUBT4_GRID7_VIDEO_URL to your Azure blob (or SAS) URL,
-            restart dev server, then reload. Ensure blob CORS allows this site (GET, HEAD).
+            Inline video playback isn’t configured yet. Set REDOUBT4_GRID7_VIDEO_URL (preferred) or
+            NEXT_PUBLIC_REDOUBT4_GRID7_VIDEO_URL to a direct video URL (Azure blob/SAS), restart the dev server, then
+            reload.
           </span>
-        </a>
+        </div>
       }
     />
   )
@@ -344,14 +354,15 @@ export function DrawerPanel({
   const isRedoubt4 = variant === "site1"
   const isFortClinton = variant === "site2"
   const labelClass = compact
-    ? "text-[max(2.55vw,2.05vmin)] md:text-xs"
-    : "text-base md:text-lg"
-  /** Redoubt 4: longer labels need smaller type to fit the drawer slots (incl. scaled mobile/desktop layouts). */
+    ? "text-[clamp(0.6rem,1.85vmin,0.82rem)] md:text-xs"
+    : "text-[clamp(0.95rem,1.95vmin,1.15rem)] md:text-lg"
+  /** Redoubt 4: longer labels need slightly smaller type to fit drawer slots. */
   const redoubt4LabelClass = compact
-    ? "text-[max(1.75vw,1.42vmin)] md:text-[10px] leading-tight text-center px-0.5"
-    : "text-[clamp(0.5rem,1.65vmin,0.6875rem)] sm:text-[0.6875rem] md:text-xs leading-tight text-center px-0.5"
+    ? "text-[clamp(0.55rem,1.45vmin,0.7rem)] md:text-[10px]"
+    : "text-[clamp(0.6rem,1.55vmin,0.75rem)] sm:text-[0.75rem] md:text-xs"
   const drawerLabelClass = isRedoubt4 ? redoubt4LabelClass : labelClass
   const [openKind, setOpenKind] = React.useState<DrawerKind>(null)
+  const [panoramaOpen, setPanoramaOpen] = React.useState(false)
 
   const open = (kind: DrawerKind) => setOpenKind(kind)
   const close = () => setOpenKind(null)
@@ -378,9 +389,9 @@ export function DrawerPanel({
     return "Research"
   }
 
-  /** Tan pill behind Redoubt 4 drawer slot labels (saddle-brown text stays readable). */
-  const redoubt4DrawerLabelSurface =
-    "tracking-tight sm:tracking-wide inline-block rounded-md bg-[#E0C9A8]/92 px-2 py-0.5 shadow-sm md:px-2.5 md:py-1"
+  /** Tan pill behind drawer slot labels (saddle-brown text stays readable). */
+  const drawerLabelSurface =
+    "tracking-tight sm:tracking-wide inline-flex max-w-[92%] items-center justify-center text-center leading-tight rounded-md bg-[#E0C9A8]/92 px-2 py-0.5 shadow-sm md:px-2.5 md:py-1"
 
   return (
     <div className="mt-4 md:mt-6 w-full">
@@ -424,9 +435,7 @@ export function DrawerPanel({
               aria-label={`Open ${drawerButtonLabels.images}`}
             >
               <span
-                className={`-translate-y-[20%] ${drawerLabelClass} ${
-                  isRedoubt4 ? redoubt4DrawerLabelSurface : "tracking-wide"
-                } text-[#8B4513] font-bold drop-shadow`}
+                className={`-translate-y-[20%] ${drawerLabelSurface} ${drawerLabelClass} text-[#8B4513] font-bold drop-shadow`}
               >
                 {drawerButtonLabels.images}
               </span>
@@ -445,9 +454,7 @@ export function DrawerPanel({
               aria-label={`Open ${drawerButtonLabels.files}`}
             >
               <span
-                className={`-translate-y-[20%] ${drawerLabelClass} ${
-                  isRedoubt4 ? redoubt4DrawerLabelSurface : "tracking-wide"
-                } text-[#8B4513] font-bold drop-shadow`}
+                className={`-translate-y-[20%] ${drawerLabelSurface} ${drawerLabelClass} text-[#8B4513] font-bold drop-shadow`}
               >
                 {drawerButtonLabels.files}
               </span>
@@ -466,9 +473,7 @@ export function DrawerPanel({
               aria-label={`Open ${drawerButtonLabels.research}`}
             >
               <span
-                className={`-translate-y-[28%] ${drawerLabelClass} ${
-                  isRedoubt4 ? redoubt4DrawerLabelSurface : "tracking-wide"
-                } text-[#8B4513] font-bold drop-shadow`}
+                className={`-translate-y-[28%] ${drawerLabelSurface} ${drawerLabelClass} text-[#8B4513] font-bold drop-shadow`}
               >
                 {drawerButtonLabels.research}
               </span>
@@ -481,8 +486,8 @@ export function DrawerPanel({
       {/* Dialogs */}
       <Dialog.Root open={openKind !== null} onOpenChange={(o) => (!o ? close() : null)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out" />
-          <Dialog.Content className="fixed inset-[2vh_2vw] z-[70] flex min-h-0 min-w-0 flex-col rounded-xl border border-white/10 bg-zinc-900/90 p-0 text-white shadow-[0_0.75vmin_2.8vmin_rgba(0,0,0,0.6)] backdrop-blur-md data-[state=open]:animate-in data-[state=open]:zoom-in-95 data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=closed]:fade-out md:inset-auto md:left-1/2 md:top-1/2 md:h-[84dvh] md:max-h-[90dvh] md:w-[90dvw] md:min-h-[84dvh] md:min-w-[min(48vw,55vmin)] md:max-w-[min(92dvw,88vmin)] md:-translate-x-1/2 md:-translate-y-1/2">
+          <Dialog.Overlay className="fixed inset-0 z-60 bg-black/70 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out" />
+          <Dialog.Content className="fixed inset-[2vh_2vw] z-70 flex min-h-0 min-w-0 flex-col rounded-xl border border-white/10 bg-zinc-900/90 p-0 text-white shadow-[0_0.75vmin_2.8vmin_rgba(0,0,0,0.6)] backdrop-blur-md data-[state=open]:animate-in data-[state=open]:zoom-in-95 data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=closed]:fade-out md:inset-auto md:left-1/2 md:top-1/2 md:h-[84dvh] md:max-h-[90dvh] md:w-[90dvw] md:min-h-[84dvh] md:min-w-[min(48vw,55vmin)] md:max-w-[min(92dvw,88vmin)] md:-translate-x-1/2 md:-translate-y-1/2">
             <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-white/10 bg-zinc-900/95 px-2 py-2 backdrop-blur-md md:px-3 md:py-2.5">
               <Dialog.Title className="text-xl font-bold uppercase leading-none tracking-tight [font-family:var(--font-libre-baskerville),ui-serif,Georgia,serif] md:text-2xl">
                 {dialogTitle(openKind)}
@@ -495,13 +500,32 @@ export function DrawerPanel({
               </Dialog.Close>
             </div>
             <div className="relative min-h-0 flex-1">
-              <div className="absolute left-0 right-0 top-0 z-10 h-8 pointer-events-none bg-gradient-to-b from-zinc-900/95 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 z-10 h-8 pointer-events-none bg-gradient-to-t from-zinc-900/95 to-transparent" />
+              <div className="absolute left-0 right-0 top-0 z-10 h-8 pointer-events-none bg-linear-to-b from-zinc-900/95 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 z-10 h-8 pointer-events-none bg-linear-to-t from-zinc-900/95 to-transparent" />
               <div className="h-full overflow-y-auto px-2 pb-2 pt-1.5 md:px-3 md:pb-3 md:pt-2">
                 <div className={`mx-auto space-y-3 text-white/90 text-base md:text-lg ${openKind === "images" && (variant === "site2" || variant === "site3") ? "max-w-full" : "max-w-full md:max-w-[min(96%,48rem)]"}`}>
               {openKind === "images" &&
                 (variant === "site1" ? (
                   <div className="space-y-4">
+                    <div className="space-y-2">
+                      <p className="text-white/70">Redoubt 4 Grid 7 — video</p>
+                      <Redoubt4Grid7Video />
+                    </div>
+                    <div className="space-y-2 border-t border-white/10 pt-4">
+                      <p className="text-white/70">Redoubt 4 panoramic images</p>
+                      <div className="flex flex-wrap items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPanoramaOpen(true)}
+                          className="inline-flex items-center justify-center rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-base text-white transition hover:bg-white/20 md:text-xl"
+                        >
+                          View panoramas
+                        </button>
+                      </div>
+                      <p className="text-xs text-white/55 md:text-sm">
+                        Tip: drag to look around. Use the fullscreen button in the viewer for an immersive experience.
+                      </p>
+                    </div>
                     <div className="space-y-2">
                       <button
                         type="button"
@@ -522,10 +546,6 @@ export function DrawerPanel({
                       <p className="text-white/70">Redoubt 4 — Site 1 image</p>
                     </div>
                     <div className="space-y-2 border-t border-white/10 pt-4">
-                      <p className="text-white/70">Redoubt 4 Grid 7 — video</p>
-                      <Redoubt4Grid7Video />
-                    </div>
-                    <div className="space-y-2 border-t border-white/10 pt-4">
                       <p className="text-white/70">Commonwealth Cultural — West Point image</p>
                       <div className="flex justify-center">
                         <a
@@ -541,6 +561,10 @@ export function DrawerPanel({
                   </div>
                 ) : variant === "site2" ? (
                   <div className="space-y-4">
+                    <div className="space-y-2">
+                      <p className="text-white/70">Fort Clinton — GPR overview (video)</p>
+                      <FortClintonGprVideo />
+                    </div>
                     <div className="grid grid-cols-2 gap-3 md:gap-4">
                       {FORT_CLINTON_IMAGES.map(({ src, alt }) => (
                         <button
@@ -561,10 +585,6 @@ export function DrawerPanel({
                           />
                         </button>
                       ))}
-                    </div>
-                    <div className="space-y-2 border-t border-white/10 pt-4">
-                      <p className="text-white/70">Fort Clinton — GPR overview (video)</p>
-                      <FortClintonGprVideo />
                     </div>
                   </div>
                 ) : variant === "site3" ? (
@@ -692,6 +712,13 @@ export function DrawerPanel({
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
+
+      <PanoramaViewerModal
+        open={panoramaOpen && openKind === "images" && variant === "site1"}
+        images={REDOUBT4_PANORAMAS}
+        initialIndex={0}
+        onClose={() => setPanoramaOpen(false)}
+      />
     </div>
   )
 }
