@@ -5,7 +5,7 @@ import * as Dialog from "@radix-ui/react-dialog"
 import { Canvas } from "@react-three/fiber"
 import { OrbitControls } from "@react-three/drei"
 import * as THREE from "three"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Rotate3d } from "lucide-react"
 
 export interface PanoramaImage {
   src: string
@@ -31,6 +31,7 @@ export function PanoramaViewerModal({
   const [index, setIndex] = React.useState(() => clampIndex(initialIndex, images.length))
   const [isLoading, setIsLoading] = React.useState(false)
   const [loadProgress, setLoadProgress] = React.useState(0)
+  const [hasInteracted, setHasInteracted] = React.useState(false)
 
   React.useEffect(() => {
     if (!open) return
@@ -44,6 +45,13 @@ export function PanoramaViewerModal({
     return () => {
       document.body.style.overflow = prevOverflow
     }
+  }, [open])
+
+  React.useEffect(() => {
+    if (!open) return
+    setHasInteracted(false)
+    const t = window.setTimeout(() => setHasInteracted(true), 6500)
+    return () => window.clearTimeout(t)
   }, [open])
 
   const goPrev = React.useCallback(() => {
@@ -67,6 +75,7 @@ export function PanoramaViewerModal({
   }, [open, goPrev, goNext])
 
   const active = images[index]
+  const showHint = open && !hasInteracted
 
   return (
     <Dialog.Root open={open} onOpenChange={(o) => (!o ? onClose() : null)}>
@@ -101,26 +110,41 @@ export function PanoramaViewerModal({
           <div className="relative min-h-0 flex-1">
             <div className="absolute inset-0">
               {active && (
-                <Canvas
-                  dpr={[1, 2]}
-                  camera={{ position: [0, 0, 0.1], fov: 75, near: 0.01, far: 2000 }}
-                  gl={{ antialias: true, powerPreference: "high-performance" }}
+                <div
+                  className="h-full w-full"
+                  onPointerDown={() => setHasInteracted(true)}
+                  onTouchStart={() => setHasInteracted(true)}
                 >
-                  <React.Suspense fallback={null}>
-                    <PanoramaSphere src={active.src} onLoadingChange={setIsLoading} onProgress={setLoadProgress} />
-                    <OrbitControls
-                      enablePan={false}
-                      enableZoom
-                      zoomSpeed={0.8}
-                      rotateSpeed={-0.35}
-                      enableDamping
-                      dampingFactor={0.08}
-                      touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE }}
-                    />
-                  </React.Suspense>
-                </Canvas>
+                  <Canvas
+                    dpr={[1, 2]}
+                    camera={{ position: [0, 0, 0.1], fov: 75, near: 0.01, far: 2000 }}
+                    gl={{ antialias: true, powerPreference: "high-performance" }}
+                  >
+                    <React.Suspense fallback={null}>
+                      <PanoramaSphere src={active.src} onLoadingChange={setIsLoading} onProgress={setLoadProgress} />
+                      <OrbitControls
+                        enablePan={false}
+                        enableZoom
+                        zoomSpeed={0.8}
+                        rotateSpeed={-0.35}
+                        enableDamping
+                        dampingFactor={0.08}
+                        touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE }}
+                      />
+                    </React.Suspense>
+                  </Canvas>
+                </div>
               )}
             </div>
+
+            {showHint && (
+              <div className="pointer-events-none absolute left-3 top-3 z-10 md:left-4 md:top-4">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-3 py-1.5 text-xs font-semibold text-white/90 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_10px_28px_rgba(0,0,0,0.55)] backdrop-blur-md">
+                  <Rotate3d className="h-4 w-4 text-white/80" aria-hidden />
+                  <span>Click and drag to look around</span>
+                </div>
+              </div>
+            )}
 
             {isLoading && (
               <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center">
