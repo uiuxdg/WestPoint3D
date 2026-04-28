@@ -338,11 +338,6 @@ const REDOUBT4_HISTORICAL_REPORT_PDFS: { href: string; description: string; link
     description: "Fortress West Point — visitor brochure on the fortifications and landscape (PDF).",
   },
   {
-    href: "https://commonwealthcultural.sharepoint.com/:b:/s/all/IQAX0oq5qUzeR64KVG-ia7JSAdGOvkgRL4_S7Pje2aCDflw?e=0q0Jd0",
-    description:
-      "West Point Integrated Cultural Resources Management Plan — draft environmental assessment (ICRMP draft EA) (PDF).",
-  },
-  {
     href: "https://commonwealthcultural.sharepoint.com/:b:/s/all/IQDDEMUWUhSMTJW-gJZ9UmkkAddcmUGtxYRIZJGL9pFd85Y?e=NB4E6Q",
     description: "Gruber, August 1974 — PDF from the Commonwealth Cultural library.",
   },
@@ -428,6 +423,7 @@ export function DrawerPanel({
   /** Tan pill behind drawer slot labels (saddle-brown text stays readable). */
   const drawerLabelSurface =
     "tracking-tight sm:tracking-wide inline-flex max-w-[92%] items-center justify-center text-center leading-tight rounded-md bg-[#E0C9A8]/92 px-2 py-0.5 shadow-sm md:px-2.5 md:py-1"
+  const drawerLabelNoWrapClass = isFortClinton ? "whitespace-nowrap" : ""
 
   return (
     <div className="mt-4 md:mt-6 w-full">
@@ -471,7 +467,7 @@ export function DrawerPanel({
               aria-label={`Open ${drawerButtonLabels.images}`}
             >
               <span
-                className={`-translate-y-[20%] ${drawerLabelSurface} ${drawerLabelClass} text-[#8B4513] font-bold drop-shadow`}
+                className={`-translate-y-[20%] ${drawerLabelSurface} ${drawerLabelNoWrapClass} ${drawerLabelClass} text-[#8B4513] font-bold drop-shadow`}
               >
                 {drawerButtonLabels.images}
               </span>
@@ -490,7 +486,7 @@ export function DrawerPanel({
               aria-label={`Open ${drawerButtonLabels.files}`}
             >
               <span
-                className={`-translate-y-[20%] ${drawerLabelSurface} ${drawerLabelClass} text-[#8B4513] font-bold drop-shadow`}
+                className={`-translate-y-[20%] ${drawerLabelSurface} ${drawerLabelNoWrapClass} ${drawerLabelClass} text-[#8B4513] font-bold drop-shadow`}
               >
                 {drawerButtonLabels.files}
               </span>
@@ -509,7 +505,7 @@ export function DrawerPanel({
               aria-label={`Open ${drawerButtonLabels.research}`}
             >
               <span
-                className={`-translate-y-[28%] ${drawerLabelSurface} ${drawerLabelClass} text-[#8B4513] font-bold drop-shadow`}
+                className={`-translate-y-[28%] ${drawerLabelSurface} ${drawerLabelNoWrapClass} ${drawerLabelClass} text-[#8B4513] font-bold drop-shadow`}
               >
                 {drawerButtonLabels.research}
               </span>
