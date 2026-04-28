@@ -32,8 +32,48 @@ export function HEAD() {
   return new NextResponse(null, { status: 204 })
 }
 
-export function GET() {
+function pickForwardHeaders(upstream: Headers): Headers {
+  const out = new Headers()
+  const allowList = [
+    "accept-ranges",
+    "cache-control",
+    "content-length",
+    "content-range",
+    "content-type",
+    "etag",
+    "last-modified",
+  ]
+
+  for (const key of allowList) {
+    const v = upstream.get(key)
+    if (v) out.set(key, v)
+  }
+  // Ensure we don't cache local dev responses.
+  if (!out.has("cache-control")) out.set("cache-control", "no-store")
+  return out
+}
+
+export async function GET(req: Request) {
   const url = resolveVideoUrl()
   if (!url) return new NextResponse(null, { status: 404 })
-  return NextResponse.redirect(url, 307)
+
+  // Proxy the video through our origin so Azure Blob CORS does not block playback.
+  // Also supports byte-range requests for scrub/seek.
+  const range = req.headers.get("range") ?? undefined
+  const upstream = await fetch(url, {
+    method: "GET",
+    headers: range ? { range } : undefined,
+    redirect: "follow",
+    cache: "no-store",
+  })
+
+  // Pass through upstream failures as-is so the browser shows a meaningful error.
+  if (!upstream.body) {
+    return new NextResponse(null, { status: upstream.status || 502 })
+  }
+
+  return new NextResponse(upstream.body, {
+    status: upstream.status,
+    headers: pickForwardHeaders(upstream.headers),
+  })
 }
