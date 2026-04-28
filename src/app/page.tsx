@@ -13,7 +13,8 @@ import { DrawerPanel } from "@/components/drawer-panel"
 import { ImageViewerModal } from "@/components/image-viewer-modal"
 import type { ImageViewerImage } from "@/components/image-viewer-modal"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { Rotate3d } from "lucide-react"
 
 export default function Page() {
   const [isLoading, setIsLoading] = useState(true)
@@ -89,6 +90,10 @@ export default function Page() {
     window.open("https://redoubtfour.commonwealthcultural.com", "_blank", "noopener,noreferrer")
   }
 
+  const openRedoubt4Panorama = useCallback(() => {
+    router.push("/panorama/redoubt-4", { scroll: false })
+  }, [router])
+
   const handleBackToLobby = () => {
     setIsGPRActive(false)
     navigateTo("lobby", 0)
@@ -145,8 +150,14 @@ export default function Page() {
             <LobbyScene
               section={currentSection}
               mousePosition={mousePosition}
-              onFrameClick={(url) => setViewerImage({ src: url, alt: "Frame image" })}
-              onLidarTourClick={openRedoubt4Site}
+              onFrameClick={(url) => {
+                if (url === "/images/redoubt4.png") {
+                  openRedoubt4Panorama()
+                  return
+                }
+                setViewerImage({ src: url, alt: "Frame image" })
+              }}
+              onLidarTourClick={openRedoubt4Panorama}
             />
           ) : (
             <RedoubtScene
@@ -169,16 +180,8 @@ export default function Page() {
         onClose={() => setViewerImage(null)}
       />
 
-      {/* Hamburger menu + shadcn Sheet */}
+      {/* Sidebar drawer (trigger disabled across devices) */}
       <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-        <SheetTrigger asChild>
-          <button
-            className="fixed left-[2.5dvw] top-[2dvh] z-50 text-3xl text-white transition-transform hover:scale-110"
-            aria-label="Toggle menu"
-          >
-            ☰
-          </button>
-        </SheetTrigger>
         <SheetContent
           side="left"
           className="pt-16 w-[min(88dvw,28vmin)] sm:w-[22vw] border-r-2 border-white/30 bg-linear-to-br from-white/90 via-zinc-200/90 to-white/90 shadow-[0.65vmin_0.65vmin_12vmin_0_rgba(209,209,209,0.44)]"
@@ -248,7 +251,7 @@ export default function Page() {
             {/* Section 0: Hero/Intro */}
             <section className="relative flex h-screen items-end md:items-center justify-center text-center px-4 md:px-8 pb-0">
               <div className="fade-in-up max-w-6xl pointer-events-auto">
-                <h1 className="mb-6 md:mb-12 text-4xl md:text-8xl font-bold uppercase text-white [font-family:var(--font-libre-baskerville),ui-serif,Georgia,serif]">
+                <h1 className="mb-6 md:mb-12 text-4xl md:text-8xl font-bold uppercase text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)] [font-family:var(--font-libre-baskerville),ui-serif,Georgia,serif]">
                   West Point <span className="text-red-600">Virtual Archive</span>
                 </h1>
                 <p className="mb-8 md:mb-16 text-lg md:text-3xl font-medium text-white/70 [font-family:var(--font-libre-baskerville),ui-serif,Georgia,serif]">
@@ -379,11 +382,11 @@ export default function Page() {
                       </>
                     )}
                     <button
-                      onClick={openRedoubt4Site}
+                      onClick={openRedoubt4Panorama}
                       className="flex-1 px-2 py-2.5 md:px-5 md:py-3 font-bold [font-family:var(--font-libre-baskerville),ui-serif,Georgia,serif] text-white text-xs md:text-base bg-blue-600 border-r-2 border-l-2 border-blue-400/45 transition-colors duration-300 hover:bg-blue-500 flex flex-col items-center justify-center gap-1"
                     >
-                      <span className="text-lg md:text-2xl leading-none">↑</span>
-                      <span className="text-xs md:text-base whitespace-nowrap">Enter Site</span>
+                      <Rotate3d aria-hidden className="h-6 w-6 md:h-8 md:w-8 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]" />
+                      <span className="text-xs md:text-base whitespace-nowrap">View in 360°</span>
                     </button>
                     {!isLastSection && (
                       <>
@@ -417,7 +420,7 @@ export default function Page() {
                     <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
                       <div className="mb-3 md:mb-6 pl-3 md:pl-6">
                         <span className="inline-block rounded-lg border border-red-500/30 bg-red-600/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-red-200/90">
-                          Under Construction
+                          Archive under Construction
                         </span>
                       </div>
                       <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-sm md:text-xl leading-snug">
@@ -481,7 +484,7 @@ export default function Page() {
                     <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
                       <div className="mb-3 md:mb-6 pl-3 md:pl-6">
                         <span className="inline-block rounded-lg border border-red-500/30 bg-red-600/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-red-200/90">
-                          Under Construction
+                          Archive under Construction
                         </span>
                       </div>
                       <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-sm md:text-xl leading-snug">
@@ -545,7 +548,7 @@ export default function Page() {
                     <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
                       <div className="mb-3 md:mb-6 pl-3 md:pl-6">
                         <span className="inline-block rounded-lg border border-red-500/30 bg-red-600/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-red-200/90">
-                          Under Construction
+                          Archive under Construction
                         </span>
                       </div>
                       <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-sm md:text-xl leading-snug">
@@ -610,7 +613,7 @@ export default function Page() {
                     <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
                       <div className="mb-3 md:mb-6 pl-3 md:pl-6">
                         <span className="inline-block rounded-lg border border-red-500/30 bg-red-600/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-red-200/90">
-                          Under Construction
+                          Archive under Construction
                         </span>
                       </div>
                       <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-sm md:text-xl leading-snug">
@@ -674,7 +677,7 @@ export default function Page() {
                     <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
                       <div className="mb-3 md:mb-6 pl-3 md:pl-6">
                         <span className="inline-block rounded-lg border border-red-500/30 bg-red-600/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-red-200/90">
-                          Under Construction
+                          Archive under Construction
                         </span>
                       </div>
                       <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-sm md:text-xl leading-snug">
@@ -738,7 +741,7 @@ export default function Page() {
                     <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
                       <div className="mb-3 md:mb-6 pl-3 md:pl-6">
                         <span className="inline-block rounded-lg border border-red-500/30 bg-red-600/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-red-200/90">
-                          Under Construction
+                          Archive under Construction
                         </span>
                       </div>
                       <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-sm md:text-xl leading-snug">
@@ -796,16 +799,19 @@ export default function Page() {
             <section className="relative flex h-screen items-end md:items-start justify-start pl-0 pr-4 md:pr-16 pt-4 pb-0 md:pt-[12vh] md:pb-0">
               <Card className="pointer-events-auto w-full md:max-w-none md:w-[min(32dvw,42vw)] rounded-l-none rounded-tr-[2.6vmin] rounded-br-none md:rounded-r-[2.6vmin] border-2 border-l-0 border-b-0 md:border-b-2 border-white/20 h-auto flex flex-col md:flex-initial backdrop-blur-md bg-linear-to-br from-zinc-900/85 via-zinc-800/78 to-zinc-950/90 shadow-[0_1.2vmin_4vmin_0_rgba(0,0,0,0.42)]">
                 <CardHeader className="pl-3 md:pl-6">
-                  <CardTitle className="mb-2 text-3xl md:text-5xl font-bold uppercase text-white">Cultural Heritage</CardTitle>
+                  <CardTitle className="mb-2 text-3xl md:text-5xl font-bold uppercase text-white">
+                    Preserve the Story
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 pl-0 pr-6 pb-0 md:pb-6">
                   <p className="mb-4 md:mb-6 pl-6 text-white text-sm md:text-xl leading-snug">
-                    These Revolutionary War earthwork fortifications at West Point, NY represent critical defensive
-                    positions during the American Revolution.
+                    The West Point Virtual Archive brings maps, models, scans, and research into one place—so these
+                    landscapes can be explored, studied, and remembered.
                   </p>
                   <p className="pl-6 text-white text-sm md:text-xl leading-snug">
-                    Built in 1778-1779, these redoubts protected the strategic Hudson River valley and helped secure
-                    American independence.
+                    Every site adds context to the Hudson Highlands defenses. As new locations and datasets are added,
+                    you&apos;ll be able to compare fortifications, follow the terrain, and see how the system worked as a
+                    whole.
                   </p>
                 </CardContent>
                 <CardFooter className="pt-0 pl-0 pr-0 pb-0 md:pb-4">

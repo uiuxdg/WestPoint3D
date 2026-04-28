@@ -4,6 +4,7 @@ import * as React from "react"
 import * as Dialog from "@radix-ui/react-dialog"
 import Image from "next/image"
 import { PanoramaViewerModal, type PanoramaImage } from "@/components/panorama-viewer-modal"
+import { fetchRedoubt4Panoramas, REDOUBT4_PANORAMAS_FALLBACK } from "@/lib/panoramas"
 
 type DrawerKind = "images" | "files" | "research" | null
 
@@ -20,27 +21,14 @@ const modalThumbImgClassCover =
 const modalThumbImgClassContain =
   "h-auto w-full object-contain transition-[filter] duration-200 group-hover:brightness-[1.05]"
 
+const REDOUBT4_LIDAR_THUMB_SRC = "/images/Redoubt%204/LiDAR%20Thumb.png"
+
 const FORT_PUTNAM_IMAGES = Array.from({ length: 30 }, (_, i) => {
   const num = String(57 + i).padStart(4, "0")
   return { src: `/images/Fort Putnam/IMG_${num}.jpeg`, alt: `Fort Putnam ${num}` }
 })
 
-const REDOUBT4_PANORAMIC_FILENAMES = [
-  "Redoubt 4 Day 1- Setup 008.jpg",
-  "Redoubt 4 Day 1- Setup 009.jpg",
-  "Redoubt 4 Day 1- Setup 012.jpg",
-  "Redoubt 4 Day 1- Setup 016.jpg",
-  "Redoubt 4 Day 1- Setup 043.jpg",
-  "Redoubt 4 Day 1- Setup 044.jpg",
-  "Redoubt 4 Day 1- Setup 054.jpg",
-  "Redoubt 4 Day 1- Setup 056.jpg",
-  "Redoubt 4 Day 1- Setup 060.jpg",
-]
-
-const REDOUBT4_PANORAMAS: PanoramaImage[] = REDOUBT4_PANORAMIC_FILENAMES.map((name) => ({
-  src: encodeURI(`/images/Redoubt 4/Panoramic/${name}`),
-  alt: `Redoubt 4 panorama — ${name.replace(/\.[^.]+$/, "")}`,
-}))
+const _redoubt4PanoramasTypecheck: PanoramaImage[] = REDOUBT4_PANORAMAS_FALLBACK
 
 /** Sorted filenames under public/images/Fort Clinton (IMG_0071 excluded from the gallery). */
 const FORT_CLINTON_IMAGES = [
@@ -227,6 +215,42 @@ function BlobInlineVideo({ apiPath, fallback }: { apiPath: string; fallback: Rea
   return <>{fallback}</>
 }
 
+function EmptyDrawerPlaceholder({
+  variant,
+  kind,
+}: {
+  variant?: "site1" | "site2" | "site3"
+  kind: Exclude<DrawerKind, null>
+}) {
+  const siteName =
+    variant === "site1" ? "Redoubt 4" : variant === "site2" ? "Fort Clinton" : variant === "site3" ? "Fort Putnam" : "this site"
+
+  const kindLabel = kind === "images" ? "Images" : kind === "files" ? "Files" : "Research"
+
+  const whatToExpect =
+    kind === "images"
+      ? "photographs, scans, LiDAR/photogrammetry, and short videos"
+      : kind === "files"
+        ? "reports, maps, downloads, and supporting documentation"
+        : "notes, citations, interpretive material, and supporting references"
+
+  return (
+    <div className="rounded-xl border border-white/15 bg-zinc-950/50 p-4 shadow-sm md:p-6">
+      <p className="text-base font-semibold text-white md:text-xl">
+        {kindLabel} for {siteName} are still in progress
+      </p>
+      <p className="mt-2 text-sm leading-snug text-white/70 md:text-base">
+        Research and development of the virtual archive for {siteName} has not yet been completed. This drawer will be
+        populated as materials are processed and prepared for public viewing.
+      </p>
+      <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-3 md:p-4">
+        <p className="text-xs font-bold uppercase tracking-wide text-white/60 md:text-sm">What to expect here</p>
+        <p className="mt-1 text-sm text-white/80 md:text-base">{whatToExpect}</p>
+      </div>
+    </div>
+  )
+}
+
 function Redoubt4Grid7Video() {
   return (
     <BlobInlineVideo
@@ -361,6 +385,18 @@ export function DrawerPanel({
     ? "text-[clamp(0.55rem,1.45vmin,0.7rem)] md:text-[10px]"
     : "text-[clamp(0.6rem,1.55vmin,0.75rem)] sm:text-[0.75rem] md:text-xs"
   const drawerLabelClass = isRedoubt4 ? redoubt4LabelClass : labelClass
+
+  const [redoubt4Panoramas, setRedoubt4Panoramas] = React.useState<PanoramaImage[]>(REDOUBT4_PANORAMAS_FALLBACK)
+  React.useEffect(() => {
+    let cancelled = false
+    fetchRedoubt4Panoramas().then((imgs) => {
+      if (!cancelled) setRedoubt4Panoramas(imgs)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const [openKind, setOpenKind] = React.useState<DrawerKind>(null)
   const [panoramaOpen, setPanoramaOpen] = React.useState(false)
 
@@ -371,7 +407,7 @@ export function DrawerPanel({
   }
 
   const drawerButtonLabels = isRedoubt4
-    ? { images: "Images and Videos", files: "Historical reports", research: "Ground Penetrating Radar" }
+    ? { images: "LiDAR, Images, & Videos", files: "Historical reports", research: "Ground Penetrating Radar" }
     : isFortClinton
       ? { images: "Images and video", files: "Files", research: "Research" }
       : { images: "Images", files: "Files", research: "Research" }
@@ -379,7 +415,7 @@ export function DrawerPanel({
   const dialogTitle = (kind: DrawerKind) => {
     if (!kind) return ""
     if (isRedoubt4) {
-      if (kind === "images") return "Images and Videos"
+      if (kind === "images") return "LiDAR, Images, & Videos"
       if (kind === "files") return "Historical reports"
       return "Ground Penetrating Radar"
     }
@@ -508,6 +544,34 @@ export function DrawerPanel({
                 (variant === "site1" ? (
                   <div className="space-y-4">
                     <div className="space-y-2">
+                      <p className="text-white/70">Interactive LiDAR tour</p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          window.open("https://redoubtfour.commonwealthcultural.com", "_blank", "noopener,noreferrer")
+                        }
+                        className="group relative block w-full overflow-hidden rounded-xl border border-white/10 bg-zinc-950/40 shadow-sm transition-[box-shadow,border-color,transform] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/80 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 hover:border-amber-200/60 hover:shadow-[0_0_0_1px_rgba(252,211,77,0.4),0_0_28px_rgba(251,191,36,0.42),0_0_56px_rgba(251,191,36,0.16)] active:scale-[0.99]"
+                        aria-label="Take interactive LiDAR Tour"
+                      >
+                        <Image
+                          src={REDOUBT4_LIDAR_THUMB_SRC}
+                          alt="LiDAR Tour thumbnail"
+                          width={1200}
+                          height={675}
+                          sizes="(max-width: 768px) 96vw, min(48rem, 90vw)"
+                          quality={24}
+                          className="h-auto w-full object-cover transition-[filter,transform] duration-300 group-hover:brightness-[1.05] group-hover:contrast-[1.02] group-hover:saturate-[1.05] group-hover:scale-[1.01]"
+                          priority={false}
+                        />
+                        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent opacity-95 transition-opacity duration-300 group-hover:opacity-85" />
+                        <div className="pointer-events-none absolute inset-0 flex items-end justify-center p-3 md:p-4">
+                          <div className="rounded-full border border-white/15 bg-black/45 px-4 py-2 text-sm font-semibold tracking-wide text-white shadow-[0_0_0_1px_rgba(0,0,0,0.2)] backdrop-blur-sm transition-[background-color,border-color,box-shadow] duration-300 group-hover:border-amber-200/50 group-hover:bg-black/35 group-hover:shadow-[0_0_0_1px_rgba(252,211,77,0.35),0_0_22px_rgba(251,191,36,0.25)] md:text-base">
+                            Take interactive LiDAR Tour
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                    <div className="space-y-2">
                       <p className="text-white/70">Redoubt 4 Grid 7 — video</p>
                       <Redoubt4Grid7Video />
                     </div>
@@ -610,7 +674,7 @@ export function DrawerPanel({
                     ))}
                   </div>
                 ) : (
-                  <p>Placeholder for images content. Add your gallery or thumbnails here.</p>
+                  <EmptyDrawerPlaceholder variant={variant} kind="images" />
                 ))}
               {openKind === "files" &&
                 (variant === "site1" ? (
@@ -667,7 +731,7 @@ export function DrawerPanel({
                     </div>
                   </div>
                 ) : (
-                  <p>Placeholder for files content. Add your file list or downloads here.</p>
+                  <EmptyDrawerPlaceholder variant={variant} kind="files" />
                 ))}
               {openKind === "research" &&
                 (variant === "site1" ? (
@@ -704,7 +768,7 @@ export function DrawerPanel({
                     ))}
                   </div>
                 ) : (
-                  <p>Placeholder for research content. Add your articles or notes here.</p>
+                  <EmptyDrawerPlaceholder variant={variant} kind="research" />
                 ))}
                 </div>
               </div>
@@ -715,7 +779,7 @@ export function DrawerPanel({
 
       <PanoramaViewerModal
         open={panoramaOpen && openKind === "images" && variant === "site1"}
-        images={REDOUBT4_PANORAMAS}
+        images={redoubt4Panoramas}
         initialIndex={0}
         onClose={() => setPanoramaOpen(false)}
       />

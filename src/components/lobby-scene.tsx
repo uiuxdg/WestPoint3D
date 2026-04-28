@@ -130,7 +130,7 @@ function LiDARRTourButton3D({ visible, onClick }: { visible: boolean; onClick?: 
           anchorY="middle"
           color="#ffffff"
         >
-          Take Interactive LiDAR Tour
+          View panoramas in 360°
         </Text>
       </group>
     </Billboard>
