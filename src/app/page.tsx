@@ -419,8 +419,8 @@ export default function Page() {
                   <div className="flex flex-row gap-2 md:block mb-4 md:mb-6 items-start">
                     <div className="flex-1 min-w-0 max-w-[60%] md:max-w-none">
                       <div className="mb-3 md:mb-6 pl-3 md:pl-6">
-                        <span className="inline-block rounded-lg border border-red-500/30 bg-red-600/20 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-bold uppercase text-red-200/90">
-                          Archive to be Created
+                        <span className="inline-block whitespace-nowrap rounded-lg border border-red-500/30 bg-red-600/20 px-3 md:px-4 py-1.5 md:py-2 text-[11px] md:text-sm font-bold uppercase text-red-200/90">
+                          Archive Under Construction
                         </span>
                       </div>
                       <p className="mb-0 pl-3 md:pl-6 pr-0 text-white text-sm md:text-xl leading-snug">

@@ -165,6 +165,14 @@ const FORT_CLINTON_IMAGES = [
   alt: `Fort Clinton ${name.replace(/\.[^.]+$/, "").replace(/_/g, " ")}`,
 }))
 
+const FORT_CLINTON_RESEARCH_IMAGES = [
+  "Fort Clinton Phase 2 Study Area.jpg",
+  "Fort Clinton Through the Years.jpg",
+].map((name) => ({
+  src: `/images/Fort Clinton/Research/${encodeURIComponent(name)}`,
+  alt: `Fort Clinton ${name.replace(/\.[^.]+$/, "")}`,
+}))
+
 /** When unset, fall back to SharePoint (opens in new tab; no iframe). */
 const REDOUBT4_GRID7_SHAREPOINT_URL =
   "https://commonwealthcultural.sharepoint.com/:v:/s/all/IQAGqYQT_ozeSZMiNy_itNntAVyp0o-4D_zS9OF2T1syqII?e=fGK2ZJ"
@@ -175,6 +183,9 @@ const FORT_CLINTON_GPR_VIDEO_API = "/api/media/fort-clinton-gpr-video"
 /** Redoubt 4 GPR data — SharePoint folder (Ground Penetrating Radar drawer). */
 const REDOUBT4_GPR_DATA_SHAREPOINT_URL =
   "https://commonwealthcultural.sharepoint.com/:f:/s/all/IgA9_RJAMJFxRJ3J4vTYaB3NAZj1_f5vCEJA_BEWBvUW_BM?e=0PXvuY"
+
+const FORT_CLINTON_RESEARCH_SHAREPOINT_DOC_URL =
+  "https://commonwealthcultural.sharepoint.com/:w:/s/all/IQDvfPHXKAH4S7e_FE5yXR_oARF32XQoVk-JCTx2eZOYwp8?e=w7pCLj"
 
 const blobVideoBoxClass =
   "flex aspect-video w-full max-h-[min(60dvh,520px)] animate-pulse items-center justify-center rounded-lg border border-white/10 bg-zinc-950/60"
@@ -379,7 +390,7 @@ export function DrawerPanel({
   const redoubt4LabelClass = compact
     ? "text-[clamp(0.55rem,1.45vmin,0.7rem)] md:text-[10px]"
     : "text-[clamp(0.6rem,1.55vmin,0.75rem)] sm:text-[0.75rem] md:text-xs"
-  const drawerLabelClass = isRedoubt4 ? redoubt4LabelClass : labelClass
+  const drawerLabelClass = isRedoubt4 || isFortClinton ? redoubt4LabelClass : labelClass
 
   const [redoubt4Panoramas, setRedoubt4Panoramas] = React.useState<PanoramaImage[]>(REDOUBT4_PANORAMAS_FALLBACK)
   React.useEffect(() => {
@@ -422,8 +433,8 @@ export function DrawerPanel({
 
   /** Tan pill behind drawer slot labels (saddle-brown text stays readable). */
   const drawerLabelSurface =
-    "tracking-tight sm:tracking-wide inline-flex max-w-[92%] items-center justify-center text-center leading-tight rounded-md bg-[#E0C9A8]/92 px-2 py-0.5 shadow-sm md:px-2.5 md:py-1"
-  const drawerLabelNoWrapClass = isFortClinton ? "whitespace-nowrap" : ""
+    "tracking-tight sm:tracking-wide inline-flex min-w-0 max-w-[92%] items-center justify-center overflow-hidden text-ellipsis text-center leading-tight rounded-md bg-[#E0C9A8]/92 px-2 py-0.5 shadow-sm md:px-2.5 md:py-1"
+  const drawerLabelNoWrapClass = ""
 
   return (
     <div className="mt-4 md:mt-6 w-full">
@@ -742,6 +753,47 @@ export function DrawerPanel({
                       >
                         Open GPR data on SharePoint
                       </a>
+                    </div>
+                  </div>
+                ) : variant === "site2" ? (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <p className="text-white/90">Fort Clinton research document (SharePoint):</p>
+                      <div className="flex justify-center">
+                        <a
+                          href={FORT_CLINTON_RESEARCH_SHAREPOINT_DOC_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-base text-white transition hover:bg-white/20 md:text-xl"
+                        >
+                          Open research document
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 border-t border-white/10 pt-4">
+                      <p className="text-white/70">Fort Clinton research images</p>
+                      <div className="grid grid-cols-2 gap-3 md:gap-4">
+                        {FORT_CLINTON_RESEARCH_IMAGES.map(({ src, alt }) => (
+                          <button
+                            key={src}
+                            type="button"
+                            onClick={() => openViewer(src, alt)}
+                            className={modalThumbButtonClass}
+                          >
+                            <Image
+                              src={src}
+                              alt={alt}
+                              width={MODAL_THUMB_W}
+                              height={MODAL_THUMB_H}
+                              sizes="(max-width: 768px) 46vw, min(320px, 24vw)"
+                              quality={MODAL_THUMB_QUALITY}
+                              className={modalThumbImgClassContain}
+                              priority={false}
+                            />
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ) : variant === "site3" ? (
